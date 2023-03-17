@@ -1,5 +1,8 @@
-import mesa
 import numpy as np
+import mesa
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 
 
@@ -14,28 +17,25 @@ class Agent(mesa.Agent):
         self.job =  rng.binomial(1, 0.25 + 0.5*self.wealth,1)
         self.fraud = rng.binomial(1,0.5,1)
         self.fraud_pred = -1
+        self.appeal
 
     def fraud_algo(self):
         rng = np.random.default_rng()
-        # if self.unique_id % 2 == 1:
-        #     self.fraud_pred = 0
-        # else:
-        #     self.fraud_pred = 1
+        # self.fraud_pred = rng.binomial(1, 0.5)
         self.fraud_pred = rng.binomial(1, 0.5*(1-self.wealth))
-        print(0.5*(1-self.wealth))
-        print(self.fraud_pred)
 
     def appeal(self):
         rng = np.random.default_rng()
-        if self.fraud_pred == 1 and self.wealth > 0.1:
-            # self.fraud_pred = [0]
+        print('bye')
+        if self.fraud_pred == 1 and self.wealth > 0.2:
             self.fraud_algo()
-            print('hi')
+            # self.fraud_pred = rng.binomial(1, 0.4)
 
 
     def step(self):
         # The agent's step will go here.
         # For demonstration purposes we will print the agent's unique_id
+        self.appeal()
         print("Hi, I am agent " + str(self.unique_id) + ".")
         # print("my wealth, job, fraud, fraud_pred is:" + str(self.wealth)+ str(self.job) + str(self.fraud)+ str(self.fraud_pred))
 
@@ -56,7 +56,7 @@ class AgentModel(mesa.Model):
         for i in range(self.num_hagents):
             a = Agent(i, self)
             a.fraud_algo()
-            a.appeal()
+            # a.appeal()
             self.schedule.add(a)
 
         self.datacollector = mesa.DataCollector(          
@@ -69,25 +69,76 @@ class AgentModel(mesa.Model):
         self.schedule.step()
         # collect data
         self.datacollector.collect(self)
-        # self.iteration += 1
-        # if self.iteration > self.max_iters:
-        #     self.running = False
+
+def tp(model_out):
+    df = model_out.reset_index(level = 'AgentID')
+    # df = pd.DataFrame(model_out,columns=["fraud","fraud_pred", "wealth"])
+    df['tp'] = df['fraud'].eq(df['fraud_pred'])
+    df['fp'] = df.apply(lambda x: 1 if x['fraud'] == 0 and x['fraud_pred'] == 1
+                     else 0, axis=1)
+
+    for i in (np.unique(df.index.get_level_values(0))):
+        x = (df.loc[(df.index.get_level_values('Step')==i)])
+        df.loc[(i,slice(None)),'wealth_perc'] = x['wealth'].rank(pct=True).astype(float)
+        # df.loc[(i,slice(None)),'wealth_perc'] 
+
+    print(df)
+
+    # print(x/x.sum())
+    # for date, new_df in df.groupby(level=0):
+    #     print(new_df)
+
+    return df
+
+    
 
 
-def viz(model_out):
-    ax = model_out.plot()
-    ax.set_title("Distribution")
-    ax.set_xlabel("Step")
-    ax.set_ylabel("Number of Citizens")
-    _ = ax.legend(bbox_to_anchor=(1.35, 1.025))
+def viz(df):
+    # courses = model_out['fraud_pred']
+    # values = model_out['wealth']
+    # print(courses)
+    # df = pd.DataFrame(model_out,columns=["fraud","fraud_pred", "wealth"])
+    # df['fraud_pred'] = df['fraud_pred'].astype(float)
+    # df['wealth'] = df['wealth'].astype(float)
+    # df['fraud'] = df['fraud'].astype(float)
+
+    # sns.lineplot(data= df, x= "Step", y = "fp")
+    # df2['tp_count'] = np.nan
+    df50 = df[df['wealth_perc']<0.5]
+    df50p = df[df['wealth_perc']>=0.5]
+
+    for i in (np.unique(df.index.get_level_values(0))):
+        x = (df.loc[(df.index.get_level_values('Step')==i)])
+        df50.loc[(i,slice(None)),'fp_count'] = x['fp'].sum().astype(float)
+        df50p.loc[(i,slice(None)),'fp_count'] = x['fp'].sum().astype(float)
+
+
+    # fig, ax = plt.subplots()
+    # ax.plot(df.index, )
+    df50 = (df50.unstack(level =1)) #.plot(y = 'fp_count', kind='line')
+    ax = df50p.plot(x = 'Step', y = 'fp_count', kind='line')
+    df50.plot(ax=ax, y = 'fp_count',)
+
+    # plt.plot
+    print('hi')
+    print(df50p)
+    plt.show()
+    
+    #have a plot over time with <0.5 sum fp
+
+
+
 
 
 if __name__ == "__main__":
 
     # np.random.seed(42)
     empty_model = AgentModel(100)
-    for i in range(4):
+    for i in range(100):
         empty_model.step()
     model_out = empty_model.datacollector.get_agent_vars_dataframe()
+    df2 = tp(model_out)
+    # print(df2.reset_index(level = 'AgentID', drop =))
+    print(df2)
     print(model_out)
-    viz(model_out)
+    viz(df2)
