@@ -1,0 +1,1 @@
+{"type": "saltelli", "n": 128, "randomized": false, "salib_problem": {"num_vars": 3, "names": ["agents", "wealth_appeal_corr", "acc"], "bounds": [[50, 151], [-0.2, 0.2], [0.5, 0.8]], "sample_scaled": true}, "calc_second_order": false}
