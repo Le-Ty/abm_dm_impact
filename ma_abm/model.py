@@ -35,7 +35,6 @@ class VirusModel(ap.Model):
         
 
 
-
     def update(self):  # after each step
         """ Record variables after setup and each step. """
         self.agents.record('wealth')
