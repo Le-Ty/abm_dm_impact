@@ -3,3 +3,4 @@ stuff/
 ap_output/
 .DS_Store
 .vscode/
+.ipynb_checkpoints
