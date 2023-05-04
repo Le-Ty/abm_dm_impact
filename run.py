@@ -12,7 +12,7 @@ import numpy as np
 # Visualization
 import matplotlib.pyplot as plt 
 import seaborn as sns
-import IPython
+import IPython 
 
 
 parameters = {
