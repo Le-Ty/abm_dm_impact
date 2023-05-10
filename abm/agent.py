@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import IPython
 
-
 class Person(ap.Agent):
     
     def setup(self):  
@@ -34,8 +33,6 @@ class Person(ap.Agent):
         self.convicted = 0
 
         
-        
-        
     def fraud_algo(self):
         """ DM mechanism can also be ML"""
         rng = np.random.default_rng()
@@ -48,30 +45,35 @@ class Person(ap.Agent):
         self.fraud_pred = rng.binomial(1, fraud_cor*(0.8-self.p.wealth_appeal_corr))
         
 
+    def appeal(self):
+        """Possibility to Appeal to Fraud Algo Decision"""
+        rng = np.random.default_rng()
+#         print('bye')
+        if self.fraud_pred == 1 and self.wealth > self.p.appeal_wealth:
+            self.fraud_algo()
+            # self.fraud_pred = rng.binomial(1, 0.4)
             
     def convict(self):
         """ Conviction and Consequences"""
         rng = np.random.default_rng()
         if self.fraud_pred == 1:
-#             if rng.binomial(1,0.8) == 1:
+            if rng.binomial(1,0.8) == 1:
                 # pay fine, get on record, 
-            self.wealth = self.wealth - np.max([0.01,(pow(self.wealth,2)*0.001)])
-            self.convicted =+ 1
-            self.fraud = rng.binomial(1,0.5,1)[0]
-            self.fraud_pred = 0
-            
-            
-    def convict_true(self):
-        """ Conviction and Consequences"""
-        rng = np.random.default_rng()
-        if self.fraud == 1:
-#             if rng.binomial(1,0.8) == 1:
-            # pay fine, get on record, 
-            self.wealth = self.wealth - (0.01)#(self.wealth*0.05)])
-            self.convicted =+ 1
-            self.fraud = rng.binomial(1,0.5,1)[0]
-            self.fraud_pred = 0
-
+                self.wealth = self.wealth - np.max([0.01,(self.wealth*0.05)])
+                self.convicted =+ 1
+                self.fraud = rng.binomial(1,0.5,1)[0]
+                self.fraud_pred = 0
+    
     def wealth_grow(self):
         self.wealth = min(1,self.wealth+pow(self.wealth,2)*0.01)
             
+            
+        
+
+
+#     def step(self):
+#         # The agent's step will go here.
+#         # For demonstration purposes we will print the agent's unique_id
+#         self.appeal()
+#         print("Hi, I am agent " + str(self.unique_id) + ".")
+#         # print("my wealth, job, fraud, fraud_pred is:" + str(self.wealth)+ str(self.job) + str(self.fraud)+ str(self.fraud_pred))
