@@ -38,11 +38,11 @@ class Person(ap.Agent):
         rng = np.random.default_rng()
         # self.fraud_pred = rng.binomial(1, 0.5)
         if self.fraud == 1:
-            fraud_cor = rng.binomial(1,self.p.acc)
+            self.fraud_pred = rng.binomial(1,self.p.acc)
         else:
-            fraud_cor = rng.binomial(1,1-self.p.acc)
+            self.fraud_pred = rng.binomial(1,1-self.p.acc)
             
-        self.fraud_pred = rng.binomial(1, fraud_cor*(0.8-self.p.wealth_appeal_corr))
+        # self.fraud_pred = rng.binomial(1, fraud_cor) #*(0.8-self.p.wealth_appeal_corr))
         
 
     def appeal(self):
@@ -56,8 +56,8 @@ class Person(ap.Agent):
     def convict(self):
         """ Conviction and Consequences"""
         rng = np.random.default_rng()
-        if self.fraud == 1:
-        # if self.fraud_pred == 1:
+        # if self.fraud == 1:
+        if self.fraud_pred == 1:
             # if rng.binomial(1,0.8) == 1:
                 # pay fine, get on record, 
             self.wealth = self.wealth - np.max([0.01,(self.wealth*0.05)])
