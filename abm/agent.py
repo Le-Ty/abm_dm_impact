@@ -13,8 +13,9 @@ class Person(ap.Agent):
     
     def setup(self):  
         """ Initialize a new variable at agent creation. """
-        # self.condition = 0  # Susceptible = 0, Infected = 1, Recovered = 2
-        a = 5 # shape
+
+        # probability functions
+        a = 5 # shape of beta function
         rng = np.random.default_rng()
         
         
@@ -36,30 +37,25 @@ class Person(ap.Agent):
     def fraud_algo(self):
         """ DM mechanism can also be ML"""
         rng = np.random.default_rng()
-        # self.fraud_pred = rng.binomial(1, 0.5)
         if self.fraud == 1:
             self.fraud_pred = rng.binomial(1,self.p.acc)
         else:
             self.fraud_pred = rng.binomial(1,1-self.p.acc)
-            
+        
+        ### for more elaborate modelling ###
         # self.fraud_pred = rng.binomial(1, fraud_cor) #*(0.8-self.p.wealth_appeal_corr))
         
 
     def appeal(self):
         """Possibility to Appeal to Fraud Algo Decision"""
         rng = np.random.default_rng()
-#         print('bye')
         if self.fraud_pred == 1 and self.wealth > self.p.appeal_wealth:
             self.fraud_algo()
-            # self.fraud_pred = rng.binomial(1, 0.4)
             
     def convict(self):
         """ Conviction and Consequences"""
         rng = np.random.default_rng()
-        # if self.fraud == 1:
         if self.fraud_pred == 1:
-            # if rng.binomial(1,0.8) == 1:
-                # pay fine, get on record, 
             self.wealth = self.wealth - np.max([0.01,(self.wealth*0.05)])
             self.convicted =+ 1
             self.fraud = rng.binomial(1,0.5,1)[0]
