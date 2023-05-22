@@ -56,13 +56,14 @@ class Person(ap.Agent):
     def convict(self):
         """ Conviction and Consequences"""
         rng = np.random.default_rng()
-        if self.fraud_pred == 1:
-            if rng.binomial(1,0.8) == 1:
+        if self.fraud == 1:
+        # if self.fraud_pred == 1:
+            # if rng.binomial(1,0.8) == 1:
                 # pay fine, get on record, 
-                self.wealth = self.wealth - np.max([0.01,(self.wealth*0.05)])
-                self.convicted =+ 1
-                self.fraud = rng.binomial(1,0.5,1)[0]
-                self.fraud_pred = 0
+            self.wealth = self.wealth - np.max([0.01,(self.wealth*0.05)])
+            self.convicted =+ 1
+            self.fraud = rng.binomial(1,0.5,1)[0]
+            self.fraud_pred = 0
     
     def wealth_grow(self):
         self.wealth = min(1,self.wealth+pow(self.wealth,2)*0.01)

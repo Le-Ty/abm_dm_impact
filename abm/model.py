@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import IPython
 
+from agent import Person
+
 
 class VirusModel_baseline(ap.Model):
     
