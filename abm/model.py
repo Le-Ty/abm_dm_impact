@@ -21,6 +21,7 @@ class VirusModel_baseline(ap.Model):
         # Create agents and network
         self.agents = ap.AgentList(self, self.p.agents, Person)
     
+        # average wealth of agent by race a t = 0
         self.w_wealth_t0 = sum((self.agents.select(self.agents.race == 1)).wealth) / len((self.agents.select(self.agents.race == 1)))
         self.nw_wealth_t0 = sum((self.agents.select(self.agents.race == 0)).wealth) / len((self.agents.select(self.agents.race == 0)))
     
@@ -56,16 +57,15 @@ class VirusModel_baseline(ap.Model):
         
         w_wr_ratio = w_wealth_tn/self.w_wealth_t0
         nw_wr_ratio = nw_wealth_tn/self.nw_wealth_t0
+
+        w_wr_ratio = w_wealth_tn - self.w_wealth_t0
+        nw_wr_ratio = nw_wealth_tn - self.nw_wealth_t0
         
         self.report('w_wr_ratio', w_wr_ratio)
         self.report('nw_wr_ratio', nw_wr_ratio)
             
         
         
-#         # Record final evaluation measures
-#         self.report('Total share infected', self.I + self.R) 
-#         self.report('Peak share infected', max(self.log['I']))
-
 
 class VirusModel(ap.Model):
     
@@ -113,6 +113,9 @@ class VirusModel(ap.Model):
         
         self.report('w_wr_ratio', w_wr_ratio)
         self.report('nw_wr_ratio', nw_wr_ratio)
+
+        w_wr_ratio = w_wealth_tn - self.w_wealth_t0
+        nw_wr_ratio = nw_wealth_tn - self.nw_wealth_t0
             
         
         
