@@ -12,7 +12,22 @@ import IPython
 class Person(ap.Agent):
     
     def setup(self):  
-        """ Initialize a new variable at agent creation. """
+        """ 
+        Initializes attributes of Agents, according to US census. 
+        
+        Attributes of Agents.
+            --------
+            race : list of floats
+                cosine similarity of top & bottom 10 words in corpus
+            gender : list of strings
+                words with cosine similarity of top & bottom 10 words in corpus
+            health : list of floats
+                cosine similarity of top & bottom 10 words in corpus
+            wealth : list of strings
+                words with cosine similarity of top & bottom 10 words in corpus
+            fraud : list of floats
+                cosine similarity of top & bottom 10 words in corpus
+        """
 
         # probability functions
         a = 5 # shape of beta function
@@ -22,10 +37,17 @@ class Person(ap.Agent):
         # race
         self.race =  rng.binomial(1,0.2)#binary not white0.2 /  white for the moment 0.8
         
+        #wealth
         if self.race == 0:
             self.wealth = rng.beta(1.5, 5,1)[0]
         else:
             self.wealth = rng.beta(5, 3,1)[0]
+
+        #health
+
+        #gender
+
+        
             
 
         # fraud
