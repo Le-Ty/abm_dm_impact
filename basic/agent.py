@@ -4,6 +4,7 @@ import networkx as nx
 import random 
 import numpy as np
 import sklearn
+import pickle
 
 # Visualization
 import matplotlib.pyplot as plt 
@@ -62,8 +63,11 @@ class Person(ap.Agent):
 
 
         if classifier:
-            print(self.vars)
-        
+
+            agent = [[self.wealth, self.race]]
+            with open("clf.pkl", "rb") as f:
+                clf = pickle.load(f)      
+            self.fraud_pred = clf.predict(agent)
 
         else:
             rng = np.random.default_rng()

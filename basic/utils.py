@@ -1,11 +1,13 @@
 #libs
 from sklearn.neural_network import MLPClassifier
+from sklearn.model_selection import train_test_split
 
 
 # Visualization
 import matplotlib.pyplot as plt 
 import seaborn as sns
 import pandas as pd
+import pickle
 
 
 def viz(data, x, y, hue):
@@ -40,10 +42,24 @@ def delta_function(disc_axis, y_axis, df, df_baseline):
 
 
 
-def classifier_train(X_train,y_train, X_test, y_test):
+def classifier_train(X_name, y_name):
+
+    X = (pickle.load(open(X_name, 'rb')))
+    y = (pickle.load(open(y_name, 'rb')))
+
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=1)
+
     clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
     clf.fit(X_train, y_train)
     print(clf.score(X_test, y_test))
+    
+    with open("clf.pkl", "wb") as f:
+        pickle.dump(clf, f)
 
 
-    return clf
+
+
+if __name__ == '__main__':
+
+    classifier_train('clf_x.txt', 'clf_y.txt')

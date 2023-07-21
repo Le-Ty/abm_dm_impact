@@ -4,6 +4,7 @@ import agentpy as ap
 import networkx as nx 
 import random 
 import numpy as np
+import pickle
 
 # Visualization
 import matplotlib.pyplot as plt 
@@ -11,6 +12,8 @@ import seaborn as sns
 import IPython
 
 from agent import Person
+from utils import classifier_train
+
 
 
 class VirusModel_baseline(ap.Model):
@@ -22,12 +25,24 @@ class VirusModel_baseline(ap.Model):
         self.agents = ap.AgentList(self, self.p.agents, Person)
         # print(self.agents.vars)
 
-
-        a_list = []
+        #create train/test data
+        x = []
+        y = []
         for ag in self.agents:
-            a_list.append([ag.wealth,ag.race,ag.fraud])
+            x.append([ag.wealth,ag.race])
+            y.append(ag.fraud)
 
-        print(a_list)
+        with open('clf_x.txt', 'wb') as fp:
+            pickle.dump(x, fp)
+
+        with open('clf_y.txt', 'wb') as fp:
+            pickle.dump(y, fp)
+
+        # train classifier
+
+        classifier_train('clf_x.txt', 'clf_y.txt')
+
+        
 
         # create distribution & development analysis
         # average wealth of agent by race a t = 0
