@@ -1,5 +1,6 @@
 #libs
-import sklearn 
+from sklearn.neural_network import MLPClassifier
+
 
 # Visualization
 import matplotlib.pyplot as plt 
@@ -39,4 +40,10 @@ def delta_function(disc_axis, y_axis, df, df_baseline):
 
 
 
-def classifier
+def classifier_train(X_train,y_train, X_test, y_test):
+    clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
+    clf.fit(X_train, y_train)
+    print(clf.score(X_test, y_test))
+
+
+    return clf

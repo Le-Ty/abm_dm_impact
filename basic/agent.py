@@ -57,10 +57,13 @@ class Person(ap.Agent):
         self.convicted = 0
 
         
-    def fraud_algo(self, classifier):
+    def fraud_algo(self, classifier = True):
         """ DM mechanism can also be ML"""
 
+
         if classifier:
+            print(self.vars)
+        
 
         else:
             rng = np.random.default_rng()

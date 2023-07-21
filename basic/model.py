@@ -20,11 +20,19 @@ class VirusModel_baseline(ap.Model):
         
         # Create agents and network
         self.agents = ap.AgentList(self, self.p.agents, Person)
+        # print(self.agents.vars)
+
+
+        a_list = []
+        for ag in self.agents:
+            a_list.append([ag.wealth,ag.race,ag.fraud])
+
+        print(a_list)
 
         # create distribution & development analysis
         # average wealth of agent by race a t = 0
-        self.w_wealth_t0 = sum((self.agents.select(self.agents.race == 1)).wealth) / len((self.agents.select(self.agents.race == 1)))
-        self.nw_wealth_t0 = sum((self.agents.select(self.agents.race == 0)).wealth) / len((self.agents.select(self.agents.race == 0)))
+        # self.w_wealth_t0 = sum((self.agents.select(self.agents.race == 1)).wealth) / len((self.agents.select(self.agents.race == 1)))
+        # self.nw_wealth_t0 = sum((self.agents.select(self.agents.race == 0)).wealth) / len((self.agents.select(self.agents.race == 0)))
     
 
     def step(self): # during each step
