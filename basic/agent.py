@@ -3,6 +3,7 @@ import agentpy as ap
 import networkx as nx 
 import random 
 import numpy as np
+import sklearn
 
 # Visualization
 import matplotlib.pyplot as plt 
@@ -56,13 +57,17 @@ class Person(ap.Agent):
         self.convicted = 0
 
         
-    def fraud_algo(self):
+    def fraud_algo(self, classifier):
         """ DM mechanism can also be ML"""
-        rng = np.random.default_rng()
-        if self.fraud == 1:
-            self.fraud_pred = rng.binomial(1,self.p.acc)
+
+        if classifier:
+
         else:
-            self.fraud_pred = rng.binomial(1,1-self.p.acc)
+            rng = np.random.default_rng()
+            if self.fraud == 1:
+                self.fraud_pred = rng.binomial(1,self.p.acc)
+            else:
+                self.fraud_pred = rng.binomial(1,1-self.p.acc)
         
         ### for more elaborate modelling ###
         # self.fraud_pred = rng.binomial(1, fraud_cor) #*(0.8-self.p.wealth_appeal_corr))
