@@ -42,10 +42,10 @@ def delta_function(disc_axis, y_axis, df, df_baseline):
 
 
 
-def classifier_train(X_name, y_name):
+def classifier_train(X, y):
 
-    X = (pickle.load(open(X_name, 'rb')))
-    y = (pickle.load(open(y_name, 'rb')))
+    # X = (pickle.load(open(X_name, 'rb')))
+    # y = (pickle.load(open(y_name, 'rb')))
 
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=1)

@@ -23,24 +23,26 @@ class VirusModel_baseline(ap.Model):
         
         # Create agents and network
         self.agents = ap.AgentList(self, self.p.agents, Person)
-        # print(self.agents.vars)
 
-        #create train/test data
+
+        # first classifier trained on same distribution
+        n = 10
+        rng = np.random.default_rng()        
+        
+        # race
         x = []
-        y = []
-        for ag in self.agents:
-            x.append([ag.wealth,ag.race])
-            y.append(ag.fraud)
+        a =  rng.binomial(1,0.2,n) #binary not white0.2 /  white for the moment 0.8
 
-        with open('clf_x.txt', 'wb') as fp:
-            pickle.dump(x, fp)
+        for i in a:        
+            if i == 0:
+                x.append([i,rng.beta(1.5, 5)])
+            else:
+                x.append([i,rng.beta(1.5, 5)])
 
-        with open('clf_y.txt', 'wb') as fp:
-            pickle.dump(y, fp)
+        # fraud
+        y = rng.binomial(1,0.5,n)
 
-        # train classifier
-
-        classifier_train('clf_x.txt', 'clf_y.txt')
+        classifier_train(x, y)
 
         
 
@@ -56,6 +58,25 @@ class VirusModel_baseline(ap.Model):
 #         self.agents.appeal()
         self.agents.convict()
         self.agents.wealth_grow()
+
+        # DM ALGO
+        #create train/test data
+        x = []
+        y = []
+        for ag in self.agents:
+            x.append([ag.wealth,ag.race])
+            y.append(ag.fraud)
+
+        # with open('clf_x.txt', 'wb') as fp:
+        #     pickle.dump(x, fp)
+
+        # with open('clf_y.txt', 'wb') as fp:
+        #     pickle.dump(y, fp)
+
+        # train classifier
+        classifier_train(x, y)
+
+
         
 
 
@@ -76,17 +97,17 @@ class VirusModel_baseline(ap.Model):
         
         # record race wealth ratio 
         
-        w_wealth_tn = sum((self.agents.select(self.agents.race == 1)).wealth) / len((self.agents.select(self.agents.race == 1)))
-        nw_wealth_tn = sum((self.agents.select(self.agents.race == 0)).wealth) / len((self.agents.select(self.agents.race == 0)))
+        # w_wealth_tn = sum((self.agents.select(self.agents.race == 1)).wealth) / len((self.agents.select(self.agents.race == 1)))
+        # nw_wealth_tn = sum((self.agents.select(self.agents.race == 0)).wealth) / len((self.agents.select(self.agents.race == 0)))
         
-        w_wr_ratio = w_wealth_tn/self.w_wealth_t0
-        nw_wr_ratio = nw_wealth_tn/self.nw_wealth_t0
+        # w_wr_ratio = w_wealth_tn/self.w_wealth_t0
+        # nw_wr_ratio = nw_wealth_tn/self.nw_wealth_t0
 
-        w_wr_ratio = w_wealth_tn - self.w_wealth_t0
-        nw_wr_ratio = nw_wealth_tn - self.nw_wealth_t0
+        # w_wr_ratio = w_wealth_tn - self.w_wealth_t0
+        # nw_wr_ratio = nw_wealth_tn - self.nw_wealth_t0
         
-        self.report('w_wr_ratio', w_wr_ratio)
-        self.report('nw_wr_ratio', nw_wr_ratio)
+        # self.report('w_wr_ratio', w_wr_ratio)
+        # self.report('nw_wr_ratio', nw_wr_ratio)
             
         
         
