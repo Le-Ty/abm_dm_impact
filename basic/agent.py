@@ -32,7 +32,7 @@ class Person(ap.Agent):
         """
 
         # probability functions
-        a = 5 # shape of beta function
+
         rng = np.random.default_rng()
         
         
@@ -49,6 +49,7 @@ class Person(ap.Agent):
 
         #gender
 
+
         
             
 
@@ -61,21 +62,30 @@ class Person(ap.Agent):
     def fraud_algo(self, classifier = True):
         """ DM mechanism can also be ML"""
 
+        self.resources = self.wealth
+
+        # decide how much influence the resources have 
+        res_weight = 0.3
+
 
         if classifier:
 
             agent = [[self.wealth, self.race]]
             with open("clf.pkl", "rb") as f:
                 clf = pickle.load(f)      
-            self.fraud_pred = clf.predict(agent)
-
+            
+            self.fraud_pred = ((1- res_weight)*clf.predict_proba(agent) + res_weight* self.resources)[0]
+            self.fraud_pred = np.rint(self.fraud_pred[0])
+            print(self.fraud_pred)
         else:
             rng = np.random.default_rng()
             if self.fraud == 1:
-                self.fraud_pred = rng.binomial(1,self.p.acc)
+                self.fraud_pred = rng.binomial(1, ((1- res_weight)*self.p.acc + res_weight* self.resources))
             else:
-                self.fraud_pred = rng.binomial(1,1-self.p.acc)
+                self.fraud_pred = rng.binomial(1, (1- res_weight)*(1-self.p.acc) + res_weight* self.resources)
         
+        # print(self.fraud_pred)
+
         ### for more elaborate modelling ###
         # self.fraud_pred = rng.binomial(1, fraud_cor) #*(0.8-self.p.wealth_appeal_corr))
         
@@ -97,6 +107,15 @@ class Person(ap.Agent):
     
     def wealth_grow(self):
         self.wealth = min(1,self.wealth+pow(self.wealth,2)*0.01)
+
+
+    # def bureaucratics(self):
+    #     """ This function is a collection of smaller functions that determine the threshold that the bureaucratic process imposes on people.
+    #         Takes resources and applies function that weighs impact of resources."""
+
+    #     if self.pers_resources 
+
+
             
             
         

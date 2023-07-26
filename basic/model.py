@@ -54,27 +54,49 @@ class VirusModel_baseline(ap.Model):
 
     def step(self): # during each step
         """ Define the models' events per simulation step. """
+
+        #EXECUTING FUNCTIONS
+
+
+        #ACCESS & TREATMENT
         self.agents.fraud_algo()
 #         self.agents.appeal()
+
+
+        #BUREAUCRATICS
         self.agents.convict()
+        
+
+        #SOCIETY
         self.agents.wealth_grow()
 
-        # DM ALGO
-        #create train/test data
-        x = []
-        y = []
-        for ag in self.agents:
-            x.append([ag.wealth,ag.race])
-            y.append(ag.fraud)
 
-        # with open('clf_x.txt', 'wb') as fp:
-        #     pickle.dump(x, fp)
 
-        # with open('clf_y.txt', 'wb') as fp:
-        #     pickle.dump(y, fp)
 
-        # train classifier
-        classifier_train(x, y)
+
+
+
+
+
+        # ALGO TRAINING
+
+        if True: # self.online_learning:
+            # DM ALGO
+            #create train/test data
+            x = []
+            y = []
+            for ag in self.agents:
+                x.append([ag.wealth,ag.race])
+                y.append(ag.fraud)
+
+            # with open('clf_x.txt', 'wb') as fp:
+            #     pickle.dump(x, fp)
+
+            # with open('clf_y.txt', 'wb') as fp:
+            #     pickle.dump(y, fp)
+
+            # train classifier
+            classifier_train(x, y)
 
 
         
