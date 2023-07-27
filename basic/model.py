@@ -65,7 +65,7 @@ class VirusModel_baseline(ap.Model):
 
         #BUREAUCRATICS
         self.agents.convict()
-        
+
 
         #SOCIETY
         self.agents.wealth_grow()
@@ -80,7 +80,9 @@ class VirusModel_baseline(ap.Model):
 
         # ALGO TRAINING
 
-        if True: # self.online_learning:
+        x = False
+
+        if x: # self.online_learning:
             # DM ALGO
             #create train/test data
             x = []
