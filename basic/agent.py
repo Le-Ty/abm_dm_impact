@@ -37,7 +37,7 @@ class Person(ap.Agent):
         
         
         # race
-        self.race =  rng.binomial(1,0.2)#binary not white0.2 /  white for the moment 0.8
+        self.race =  rng.binomial(1,0.2)#binary 1 = not white0.2 /  0 = white for the moment 0.8
         
 
         # gender
@@ -47,12 +47,12 @@ class Person(ap.Agent):
         # wealth
 
         #load distributions
-        with open("/data/distributions_init.pickle", "rb") as f:
+        with open("data/distributions_init.pickle", "rb") as f:
             d_fnw = pickle.load(f)
             d_mw = pickle.load(f)
             d_mnw = pickle.load(f)
             d_fw = pickle.load(f)
-        with open("/data/values_init.pickle", "rb") as f:
+        with open("data/values_init.pickle", "rb") as f:
             v_fnw = pickle.load(f)
             v_mw = pickle.load(f)
             v_mnw = pickle.load(f)
@@ -60,27 +60,24 @@ class Person(ap.Agent):
 
 
 
-        if self.gender == 0 and self.race == 0:
-            self.wealth = (random.choices(v_fnw, weights=d_fnw, k=1))
-        elif self.gender == 1 and self.race == 0:
-            self.wealth = (random.choices(v_mnw, weights=d_mnw, k=1))
-        elif self.gender == 1 and self.race == 1:
-            self.wealth = (random.choices(v_mw, weights=d_mw, k=1))
-        elif self.gender == 0 and self.race == 1:
-            self.wealth = (random.choices(v_fw, weights=d_fw, k=1))
+        if (self.gender == 0 and self.race == 0):
+            self.wealth = (random.choices(v_fnw, weights=d_fnw, k=1))[0]
+        elif (self.gender == 1 and self.race == 0):
+            self.wealth = (random.choices(v_mnw, weights=d_mnw, k=1))[0]
+        elif (self.gender == 1 and self.race == 1):
+            self.wealth = (random.choices(v_mw, weights=d_mw, k=1))[0]
+        elif (self.gender == 0 and self.race == 1):
+            self.wealth = (random.choices(v_fw, weights=d_fw, k=1))[0]
 
 
         # health
 
-        self.health = np.random.uniform(0,1,1)
-
-        
-
+        self.health = np.random.uniform(0,1)
 
         
 
         # fraud
-        self.fraud = rng.binomial(1,0.5,1)[0]
+        self.fraud = rng.binomial(1,0.2,1)[0] #uniform
         self.fraud_pred = -1
         self.convicted = 0
 
@@ -94,15 +91,14 @@ class Person(ap.Agent):
         res_weight = 0.3
 
 
-        if classifier:
+        if classifier != None:
 
-            agent = [[self.wealth, self.race]]
+            agent = [[self.race, self.gender, self.wealth, self.health]]
             with open("clf.pkl", "rb") as f:
                 clf = pickle.load(f)      
-            
             self.fraud_pred = ((1- res_weight)*clf.predict_proba(agent) + res_weight* self.resources)[0]
             self.fraud_pred = np.rint(self.fraud_pred[0])
-            print(self.fraud_pred)
+
         else:
             rng = np.random.default_rng()
             if self.fraud == 1:

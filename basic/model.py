@@ -18,7 +18,7 @@ from utils import classifier_train
 
 class VirusModel_baseline(ap.Model):
     
-    def setup(self): #before
+    def setup(self, n_train = 100): #before
         """ Initialize the agents and network of the model. """
         
         # Create agents and network
@@ -26,23 +26,43 @@ class VirusModel_baseline(ap.Model):
 
 
         # first classifier trained on same distribution
-        n = 10
-        rng = np.random.default_rng()        
-        
-        # race
-        x = []
-        a =  rng.binomial(1,0.2,n) #binary not white0.2 /  white for the moment 0.8
+        #load distributions
+        if self.p.clf == 'hist':
+            with open("data/distributions_init.pickle", "rb") as f:
+                d_fnw = pickle.load(f)
+                d_mw = pickle.load(f)
+                d_mnw = pickle.load(f)
+                d_fw = pickle.load(f)
+            with open("data/values_init.pickle", "rb") as f:
+                v_fnw = pickle.load(f)
+                v_mw = pickle.load(f)
+                v_mnw = pickle.load(f)
+                v_fw = pickle.load(f)
 
-        for i in a:        
-            if i == 0:
-                x.append([i,rng.beta(1.5, 5)])
-            else:
-                x.append([i,rng.beta(1.5, 5)])
+                rng = np.random.default_rng()        
+                
+                # race
+                x = []
+                race =  rng.binomial(1,0.2,n_train) #binary not white0.2 /  white for the moment 0.8
+                for i in race:
+                    gender = rng.binomial(1,0.5,1)[0]
+                    health = np.random.uniform(0,1,1)[0]
 
-        # fraud
-        y = rng.binomial(1,0.5,n)
+                    if (gender == 0 and i == 1).all():
+                        wealth = (random.choices(v_fnw, weights=d_fnw, k=1))[0]
+                    elif (gender == 1 and i == 1).all():
+                        wealth = (random.choices(v_mnw, weights=d_mnw, k=1))[0]
+                    elif (gender == 1 and i == 0).all():
+                        wealth = (random.choices(v_mw, weights=d_mw, k=1))[0]
+                    elif (gender == 0 and i == 0).all():
+                        wealth = (random.choices(v_fw, weights=d_fw, k=1))[0]
+                    # print(gender,i)
+                    x.append([i,gender,wealth,health])
 
-        classifier_train(x, y)
+
+                # fraud
+                y = rng.binomial(1,0.5,n_train)
+                classifier_train(x, y)
 
         
 
@@ -52,14 +72,14 @@ class VirusModel_baseline(ap.Model):
         # self.nw_wealth_t0 = sum((self.agents.select(self.agents.race == 0)).wealth) / len((self.agents.select(self.agents.race == 0)))
     
 
-    def step(self): # during each step
+    def step(self, clf = 'hist'): # during each step
         """ Define the models' events per simulation step. """
 
         #EXECUTING FUNCTIONS
 
 
         #ACCESS & TREATMENT
-        self.agents.fraud_algo()
+        self.agents.fraud_algo(self.p.clf)
 #         self.agents.appeal()
 
 
@@ -74,21 +94,15 @@ class VirusModel_baseline(ap.Model):
 
 
 
-
-
-
-
         # ALGO TRAINING
 
-        x = False
-
-        if x: # self.online_learning:
+        if self.p.clf == 'update': # self.online_learning:
             # DM ALGO
             #create train/test data
             x = []
             y = []
             for ag in self.agents:
-                x.append([ag.wealth,ag.race])
+                x.append([ag.race, ag.gender, ag.wealth, ag.health])
                 y.append(ag.fraud)
 
             # with open('clf_x.txt', 'wb') as fp:
@@ -150,7 +164,7 @@ class VirusModel(ap.Model):
 
     def step(self): # during each step
         """ Define the models' events per simulation step. """
-        self.agents.fraud_algo()
+        self.agents.fraud_algo(self.p.clf)
         self.agents.appeal()
         self.agents.convict()
         self.agents.wealth_grow()
