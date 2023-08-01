@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import pickle
+import numpy as np
+import random
 
 
 def viz(data, x, y, hue):
@@ -56,6 +58,65 @@ def classifier_train(X, y):
     
     with open("clf.pkl", "wb") as f:
         pickle.dump(clf, f)
+
+
+def generate_init(train_clf = True, n = 1):
+
+    np.random.seed(42)
+
+    with open("data/distributions_init.pickle", "rb") as f:
+        d_fnw = pickle.load(f)
+        d_mw = pickle.load(f)
+        d_mnw = pickle.load(f)
+        d_fw = pickle.load(f)
+    with open("data/values_init.pickle", "rb") as f:
+        v_fnw = pickle.load(f)
+        v_mw = pickle.load(f)
+        v_mnw = pickle.load(f)
+        v_fw = pickle.load(f)
+
+    rng = np.random.default_rng()        
+    
+    # race
+    x = []
+    g = []
+    w = []
+    h = []
+    race =  rng.binomial(1,0.2,n) #binary not white0.2 /  white for the moment 0.8
+    for i in race:
+        gender = rng.binomial(1,0.5,1)[0]
+        health = np.random.uniform(0,1,1)[0]
+
+        if (gender == 0 and i == 1).all():
+            wealth = (random.choices(v_fnw, weights=d_fnw, k=1))[0]
+        elif (gender == 1 and i == 1).all():
+            wealth = (random.choices(v_mnw, weights=d_mnw, k=1))[0]
+        elif (gender == 1 and i == 0).all():
+            wealth = (random.choices(v_mw, weights=d_mw, k=1))[0]
+        elif (gender == 0 and i == 0).all():
+            wealth = (random.choices(v_fw, weights=d_fw, k=1))[0]
+        
+        if train_clf:
+            x.append([i,gender,wealth,health])
+        else:
+            g.append(gender)
+            w.append(wealth)
+            h.append(health)
+
+
+    # fraud
+    fraud = rng.binomial(1,0.5,n)
+    fraud_pred = np.full(n,-1)
+    convicted = np.full(n,0)
+
+    if train_clf:
+        return x,fraud
+    else:
+        return race[0],g[0],w[0],h[0],fraud,fraud_pred,convicted
+
+
+
+
 
 
 

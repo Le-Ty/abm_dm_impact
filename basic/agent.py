@@ -11,6 +11,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import IPython
 
+#import other functions
+
+from utils import generate_init
+
 class Person(ap.Agent):
     
     def setup(self):  
@@ -32,55 +36,9 @@ class Person(ap.Agent):
         """
 
         # probability functions
-
-        rng = np.random.default_rng()
-        
-        
-        # race
-        self.race =  rng.binomial(1,0.2)#binary 1 = not white0.2 /  0 = white for the moment 0.8
-        
-
-        # gender
-        self.gender =  rng.binomial(1,0.5)
-
-
-        # wealth
-
-        #load distributions
-        with open("data/distributions_init.pickle", "rb") as f:
-            d_fnw = pickle.load(f)
-            d_mw = pickle.load(f)
-            d_mnw = pickle.load(f)
-            d_fw = pickle.load(f)
-        with open("data/values_init.pickle", "rb") as f:
-            v_fnw = pickle.load(f)
-            v_mw = pickle.load(f)
-            v_mnw = pickle.load(f)
-            v_fw = pickle.load(f)
-
-
-
-        if (self.gender == 0 and self.race == 0):
-            self.wealth = (random.choices(v_fnw, weights=d_fnw, k=1))[0]
-        elif (self.gender == 1 and self.race == 0):
-            self.wealth = (random.choices(v_mnw, weights=d_mnw, k=1))[0]
-        elif (self.gender == 1 and self.race == 1):
-            self.wealth = (random.choices(v_mw, weights=d_mw, k=1))[0]
-        elif (self.gender == 0 and self.race == 1):
-            self.wealth = (random.choices(v_fw, weights=d_fw, k=1))[0]
-
-
-        # health
-
-        self.health = np.random.uniform(0,1)
+        self.race,self.gender,self.wealth,self.health,self.fraud,self.fraud_pred,self.convicted = generate_init(train_clf = False, n =1)
 
         
-
-        # fraud
-        self.fraud = rng.binomial(1,0.2,1)[0] #uniform
-        self.fraud_pred = -1
-        self.convicted = 0
-
         
     def fraud_algo(self, classifier = True):
         """ DM mechanism can also be ML"""
@@ -95,8 +53,8 @@ class Person(ap.Agent):
 
             agent = [[self.race, self.gender, self.wealth, self.health]]
             with open("clf.pkl", "rb") as f:
-                clf = pickle.load(f)      
-            self.fraud_pred = ((1- res_weight)*clf.predict_proba(agent) + res_weight* self.resources)[0]
+                clf = pickle.load(f)    
+            self.fraud_pred = clf.predict_proba(agent)[0]
             self.fraud_pred = np.rint(self.fraud_pred[0])
 
         else:
@@ -106,6 +64,25 @@ class Person(ap.Agent):
             else:
                 self.fraud_pred = rng.binomial(1, (1- res_weight)*(1-self.p.acc) + res_weight* self.resources)
         
+
+#  if classifier != None:
+
+#             agent = [[self.race, self.gender, self.wealth, self.health]]
+#             with open("clf.pkl", "rb") as f:
+#                 clf = pickle.load(f)    
+#             self.fraud_pred = ((1- res_weight)*clf.predict_proba(agent) + res_weight* self.resources)[0]
+#             self.fraud_pred = np.rint(self.fraud_pred[0])
+
+#         else:
+#             rng = np.random.default_rng()
+#             if self.fraud == 1:
+#                 self.fraud_pred = rng.binomial(1, ((1- res_weight)*self.p.acc + res_weight* self.resources))
+#             else:
+#                 self.fraud_pred = rng.binomial(1, (1- res_weight)*(1-self.p.acc) + res_weight* self.resources)
+        
+
+
+
         # print(self.fraud_pred)
 
         ### for more elaborate modelling ###
@@ -128,7 +105,7 @@ class Person(ap.Agent):
             self.fraud_pred = 0
     
     def wealth_grow(self):
-        self.wealth = min(1,self.wealth+pow(self.wealth,2)*0.01)
+        self.wealth = min(1,self.wealth+pow(self.wealth,2)*0.1)
 
 
     # def bureaucratics(self):
