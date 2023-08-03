@@ -44,25 +44,27 @@ class Person(ap.Agent):
         """ DM mechanism can also be ML"""
 
         self.resources = self.wealth
+        self.fraud_pred =0
 
         # decide how much influence the resources have 
         res_weight = 0.3
-
 
         if classifier != None:
 
             agent = [[self.race, self.gender, self.wealth, self.health]]
             with open("clf.pkl", "rb") as f:
                 clf = pickle.load(f)    
-            self.fraud_pred = clf.predict_proba(agent)[0]
-            self.fraud_pred = np.rint(self.fraud_pred[0])
+            self.fraud_pred = clf.predict(agent)[0]
+            # self.fraud_pred = np.rint(self.fraud_pred[0]) 
 
         else:
             rng = np.random.default_rng()
             if self.fraud == 1:
-                self.fraud_pred = rng.binomial(1, ((1- res_weight)*self.p.acc + res_weight* self.resources))
+                self.fraud_pred = rng.binomial(1, self.p.acc)
             else:
-                self.fraud_pred = rng.binomial(1, (1- res_weight)*(1-self.p.acc) + res_weight* self.resources)
+                self.fraud_pred = rng.binomial(1, (1-self.p.acc))
+
+        return self.fraud_pred
         
 
 #  if classifier != None:
@@ -93,16 +95,16 @@ class Person(ap.Agent):
         """Possibility to Appeal to Fraud Algo Decision"""
         rng = np.random.default_rng()
         if self.fraud_pred == 1 and self.wealth > self.p.appeal_wealth:
-            self.fraud_algo()
+            self.fraud_algo(self.p.clf)
             
     def convict(self):
         """ Conviction and Consequences"""
         rng = np.random.default_rng()
         if self.fraud_pred == 1:
-            self.wealth = self.wealth - np.max([0.01,(self.wealth*0.05)])
+            self.wealth = np.clip(self.wealth - np.max([0.05,(self.wealth*0.1)]),0,1)
             self.convicted =+ 1
-            self.fraud = rng.binomial(1,0.5,1)[0]
-            self.fraud_pred = 0
+        self.fraud = rng.binomial(1,np.clip(((self.wealth-0.75)**4+0.3), 0,0.9))
+            # self.fraud_pred = 0
     
     def wealth_grow(self):
         self.wealth = min(1,self.wealth+pow(self.wealth,2)*0.1)

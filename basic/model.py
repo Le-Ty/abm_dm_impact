@@ -18,7 +18,7 @@ from utils import classifier_train, generate_init
 
 class VirusModel_baseline(ap.Model):
     
-    def setup(self, n_train = 100): #before
+    def setup(self, n_train = 10000): #before
         """ Initialize the agents and network of the model. """
         
         # Create agents and network
@@ -39,7 +39,7 @@ class VirusModel_baseline(ap.Model):
         # self.nw_wealth_t0 = sum((self.agents.select(self.agents.race == 0)).wealth) / len((self.agents.select(self.agents.race == 0)))
     
 
-    def step(self, clf = 'hist'): # during each step
+    def step(self, clf = 'hist', expi = None): # during each step
         """ Define the models' events per simulation step. """
 
         #EXECUTING FUNCTIONS
@@ -47,6 +47,8 @@ class VirusModel_baseline(ap.Model):
 
         #ACCESS & TREATMENT
         self.agents.fraud_algo(self.p.clf)
+
+
 #         self.agents.appeal()
 
 
@@ -85,10 +87,13 @@ class VirusModel_baseline(ap.Model):
 
     def update(self):  # after each step
         """ Record variables after setup and each step. """
+        # print(self.agents.fraud_pred)
         self.agents.record('wealth')
         self.agents.record('fraud_pred')
         self.agents.record('fraud')
         self.agents.record('race')
+        self.agents.record('gender')
+        self.agents.record('convicted')
         
         
     
@@ -136,7 +141,8 @@ class VirusModel(ap.Model):
     def step(self): # during each step
         """ Define the models' events per simulation step. """
         self.agents.fraud_algo(self.p.clf)
-        self.agents.appeal()
+        if self.p.expi == 'appeal':
+            self.agents.appeal()
         self.agents.convict()
         self.agents.wealth_grow()
 
