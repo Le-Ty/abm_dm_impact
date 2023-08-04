@@ -48,37 +48,48 @@ def delta_function(disc_axis, y_axis, df, df_baseline):
     return pd.concat([df_x0, df_x1])
 
 
+def fraud_val(wealth, fraud_det = 0):
+    rng = np.random.default_rng()        
+    if wealth > 0.40823212:
+        p_det = 1
+    else: 
+        p_det = 0
+    
+    p_prob = rng.binomial(1,np.clip(((wealth-0.75)**4+0.3), 0,0.9))
+
+    return np.random.choice([p_det,p_prob], 1, p =[fraud_det, 1- fraud_det])    
+
 
 def classifier_train(X, y):
 
     # X = (pickle.load(open(X_name, 'rb')))
     # y = (pickle.load(open(y_name, 'rb')))
 
-    X = pd.DataFrame(X)
-    y = pd.DataFrame(y)
-    y=y.rename(columns = {0:'y'})
-    df = pd.concat([X,y], axis =1)
+    # X = pd.DataFrame(X)
+    # y = pd.DataFrame(y)
+    # y=y.rename(columns = {0:'y'})
+    # df = pd.concat([X,y], axis =1)
 
 
-    # Separate majority and minority classes
-    df_majority = df[df['y'] ==0]
-    df_minority = df[df['y'] ==1]
+    # # Separate majority and minority classes
+    # df_majority = df[df['y'] ==0]
+    # df_minority = df[df['y'] ==1]
 
-    # Downsample majority class
-    df_majority_downsampled = resample(df_majority, 
-                                    replace=False,    
-                                    n_samples=4000)#Upsample minority class
-    df_minority_upsampled = resample(df_minority, 
-                                    replace=True,     
-                                    n_samples=4000)# Combine minority class with downsampled majority class
-    df_up_down_sampled = pd.concat([df_majority_downsampled, df_minority_upsampled])
+    # # Downsample majority class
+    # df_majority_downsampled = resample(df_majority, 
+    #                                 replace=False,    
+    #                                 n_samples=4000)#Upsample minority class
+    # df_minority_upsampled = resample(df_minority, 
+    #                                 replace=True,     
+    #                                 n_samples=4000)# Combine minority class with downsampled majority class
+    # df_up_down_sampled = pd.concat([df_majority_downsampled, df_minority_upsampled])
 
 
 
     cv = KFold(n_splits=10)
     X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=1)
 
-    pipe = make_pipeline(StandardScaler(),  BaggingClassifier(estimator=SVC(class_weight={0:0.50, 1:0.50}),n_estimators=10, random_state=0))
+    pipe = make_pipeline(StandardScaler(),  MLPClassifier(solver='adam', alpha = 0.001, hidden_layer_sizes=(30, 10), random_state=1)) # BaggingClassifier(estimator=SVC(class_weight={0:0.50, 1:0.50}),n_estimators=10, random_state=0))
     pipe.fit(X_train, y_train) 
 
     # clf = RandomForestClassifier(n_estimators=500)
@@ -90,7 +101,7 @@ def classifier_train(X, y):
         pickle.dump(pipe, f)
 
 
-def generate_init(train_clf = True, n = 1):
+def generate_init(train_clf = True, n = 1, fraud_det = 0):
 
     np.random.seed(42)
 
@@ -121,16 +132,16 @@ def generate_init(train_clf = True, n = 1):
 
         if (gender == 0 and i == 1).all():
             wealth = (random.choices(v_fnw, weights=d_fnw, k=1))[0]
-            fraud = rng.binomial(1,np.clip(((wealth-0.75)**4+0.3), 0,0.9))
+            fraud = fraud_val(wealth, fraud_det)
         elif (gender == 1 and i == 1).all():
             wealth = (random.choices(v_mnw, weights=d_mnw, k=1))[0]
-            fraud = rng.binomial(1,np.clip(((wealth-0.75)**4+0.3), 0,0.9))
+            fraud = fraud_val(wealth, fraud_det)
         elif (gender == 1 and i == 0).all():
             wealth = (random.choices(v_mw, weights=d_mw, k=1))[0]
-            fraud = rng.binomial(1,np.clip(((wealth-0.75)**4+0.3), 0,0.9))
+            fraud = fraud_val(wealth, fraud_det)
         elif (gender == 0 and i == 0).all():
             wealth = (random.choices(v_fw, weights=d_fw, k=1))[0]
-            fraud = rng.binomial(1,np.clip(((wealth-0.75)**4+0.3), 0,0.9))
+            fraud = fraud_val(wealth, fraud_det)
         
         if train_clf:
             x.append([i,gender,wealth,health])
