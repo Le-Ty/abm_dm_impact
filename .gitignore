@@ -1,7 +1,7 @@
 # custom
 stuff/
 ap_output/
-data/
+basic/data/
 .DS_Store
 .vscode/
 .ipynb_checkpoints/
