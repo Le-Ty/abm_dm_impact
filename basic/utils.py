@@ -7,6 +7,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.model_selection import KFold
 from sklearn.utils import resample
+from fairlearn.metrics import equalized_odds_difference, demographic_parity_difference
 
 # Visualization
 import matplotlib.pyplot as plt 
@@ -167,6 +168,15 @@ def generate_init(train_clf = True, n = 1, fraud_det = 0):
     else:
         return race[0],g[0],w[0],h[0],f[0],fraud_pred,convicted[0]
 
+
+
+def fairness_metrics(data, y_true, y_pred, sensitive_features ):
+
+    dpd = demographic_parity_difference( y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
+    eod = equalized_odds_difference( y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
+    # dpd = demographic_parity_difference( y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
+
+    return dpd, eod
 
 
 
