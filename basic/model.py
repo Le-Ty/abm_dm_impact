@@ -47,6 +47,8 @@ class VirusModel_baseline(ap.Model):
 
         #ACCESS & TREATMENT
         self.agents.fraud_algo(self.p.clf)
+        
+        # self.agents.fairness_metrics(self.agents)
 
 
         self.agents.appeal()
@@ -89,11 +91,16 @@ class VirusModel_baseline(ap.Model):
         """ Record variables after setup and each step. """
         # print(self.agents.fraud_pred)
         self.agents.record('wealth')
+        self.agents.record('health')
         self.agents.record('fraud_pred')
         self.agents.record('fraud')
         self.agents.record('race')
         self.agents.record('gender')
         self.agents.record('convicted')
+        self.agents.record('eod_gender')
+        self.agents.record('eod_race')
+        self.agents.record('dpd_gender')
+        self.agents.record('dpd_race')
         
         
     
@@ -152,6 +159,8 @@ class VirusModel(ap.Model):
         #ACCESS & TREATMENT
         self.agents.fraud_algo(self.p.clf)
 
+        self.agents.fairness_metrics(self.agents)
+
 
         # self.agents.appeal()
 
@@ -193,12 +202,16 @@ class VirusModel(ap.Model):
         """ Record variables after setup and each step. """
         # print(self.agents.fraud_pred)
         self.agents.record('wealth')
+        self.agents.record('health')
         self.agents.record('fraud_pred')
         self.agents.record('fraud')
         self.agents.record('race')
         self.agents.record('gender')
         self.agents.record('convicted')
-        
+        self.agents.record('eod_gender')
+        self.agents.record('eod_race')
+        self.agents.record('dpd_gender')
+        self.agents.record('dpd_race')
         
     
     def end(self):     

@@ -7,7 +7,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.model_selection import KFold
 from sklearn.utils import resample
-from fairlearn.metrics import equalized_odds_difference, demographic_parity_difference
+
+from fairlearn.preprocessing import CorrelationRemover
 
 # Visualization
 import matplotlib.pyplot as plt 
@@ -60,7 +61,7 @@ def fraud_val(wealth, fraud_det = 0):
     return np.random.choice([p_det,p_prob], 1, p =[fraud_det, 1- fraud_det])[0]    
 
 
-def classifier_train(X, y):
+def classifier_train(X, y, mitigate = 'reduce'):
 
     # X = (pickle.load(open(X_name, 'rb')))
     # y = (pickle.load(open(y_name, 'rb')))
@@ -68,10 +69,11 @@ def classifier_train(X, y):
     X = pd.DataFrame(X)
     y = pd.DataFrame(y)
     y=y.rename(columns = {0:'y'})
+    X = X.rename(columns = {0: 'race', 1:'gender', 2:'wealth', 3:'health'})
     df = pd.concat([X,y], axis =1)
 
 
-    # Separate majority and minority classes
+    # # Separate majority and minority classes
     df_majority = df[df['y'] ==0]
     df_minority = df[df['y'] ==1]
 
@@ -84,15 +86,51 @@ def classifier_train(X, y):
                                     n_samples=4000)# Combine minority class with downsampled majority class
     df_up_down_sampled = pd.concat([df_majority_downsampled, df_minority_upsampled])
 
+    # X = df_baseline[['fraud','wealth', 'gender', 'race']]
+
+
     y = df_up_down_sampled['y']
     X = df_up_down_sampled.drop('y', axis = 1)
+    X = X.rename(columns = {0: 'race', 1:'gender', 2:'wealth', 3:'health'})
+    print(X)
+
+    if mitigate == 'decorrelate':
+        cr = CorrelationRemover(sensitive_feature_ids=['race'])
+        # cr.fit(X)
+        X_t = cr.fit_transform(X)
+        X_t = pd.DataFrame(X_t)
+        X_t = X_t.rename(columns = {0:'gender', 1:'wealth', 2:'health'})
+        X_t.insert(0,'race',list(X['race']))
+        # X_t.insert(0,'gender',list(X['gender']))
+        plot_heatmap(pd.DataFrame(X),X['race'],target = 'race', title= "Correlation values in the original dataset")
+
+        plot_heatmap(pd.DataFrame(X_t),X['race'], target = 'race', title="Correlation values in the decorrelated dataset")
+
+        cr = CorrelationRemover(sensitive_feature_ids=['gender'])
+        # cr.fit(X)
+        X_t = cr.fit_transform(X)
+        X_t = pd.DataFrame(X_t)
+        X_t = X_t.rename(columns = {0:'race', 1:'wealth', 2:'health'})
+        X_t.insert(1,'gender',list(X['gender']))
+        # X_t.insert(0,'gender',list(X['gender']))
+        plot_heatmap(pd.DataFrame(X),X['gender'], target = 'gender', title="Correlation values in the original dataset")
+
+        plot_heatmap(pd.DataFrame(X_t),X['gender'], target = 'gender',  title="Correlation values in the decorrelated dataset")
+        
+        
+        X = X_t
+
+    # if mitigate == 'reduce': 
+    #     dp = DemographicParity(difference_bound=0.01)
+    #     dp.load_data(X, y_true, sensitive_features=sensitive_features)
+        
 
 
 
-    cv = KFold(n_splits=10)
+
     X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=1)
 
-    pipe = make_pipeline(StandardScaler(),  MLPClassifier(solver='adam', alpha = 0.0001, hidden_layer_sizes=(30, 15), random_state=1)) # BaggingClassifier(estimator=SVC(class_weight={0:0.50, 1:0.50}),n_estimators=10, random_state=0))
+    pipe = make_pipeline(StandardScaler(), MLPClassifier(solver='adam', alpha = 0.0001, hidden_layer_sizes=(30, 15), random_state=1)) # BaggingClassifier(estimator=SVC(class_weight={0:0.50, 1:0.50}),n_estimators=10, random_state=0))
     pipe.fit(X_train, y_train) 
 
     # clf = RandomForestClassifier(n_estimators=500)
@@ -170,13 +208,41 @@ def generate_init(train_clf = True, n = 1, fraud_det = 0):
 
 
 
-def fairness_metrics(data, y_true, y_pred, sensitive_features ):
 
-    dpd = demographic_parity_difference( y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
-    eod = equalized_odds_difference( y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
-    # dpd = demographic_parity_difference( y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
+def plot_heatmap(df,y, target, title = 'correlation matrix'):
+    df[target] = list(y)
+    # df = df.rename(columns={"had_inpatient_days_True": "had_inpatient_days"})
+    cols = list(df.columns)
 
-    return dpd, eod
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.imshow(round(df.corr(), 2), cmap="coolwarm")
+
+    # Show all ticks and label them with the respective list entries
+    ax.set_xticks(np.arange(len(cols)), labels=cols)
+    ax.set_yticks(np.arange(len(cols)), labels=cols)
+
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax.get_xticklabels(), rotation=15, ha="right", rotation_mode="anchor")
+
+    # Loop over data dimensions and create text annotations.
+    for i in range(len(cols)):
+        for j in range(len(cols)):
+            ax.text(
+                j,
+                i,
+                round(df.corr().to_numpy()[i, j], 2),
+                ha="center",
+                va="center",
+            )
+
+    ax.set_title(f"{title}")
+    plt.show()
+
+
+
+
+
+
 
 
 

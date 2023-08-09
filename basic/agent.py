@@ -12,8 +12,10 @@ import seaborn as sns
 import IPython
 
 #import other functions
-
 from utils import generate_init
+
+from fairlearn.metrics import equalized_odds_ratio, demographic_parity_ratio
+
 
 class Person(ap.Agent):
     
@@ -37,7 +39,10 @@ class Person(ap.Agent):
 
         # probability functions
         self.race,self.gender,self.wealth,self.health,self.fraud,self.fraud_pred,self.convicted = generate_init(train_clf = False, n =1)
-
+        self.dpd_race = 0
+        self.dpd_gender = 0
+        self.eod_race = 0
+        self.eod_gender = 0
         
         
     def fraud_algo(self, classifier = True):
@@ -117,7 +122,30 @@ class Person(ap.Agent):
     #     if self.pers_resources 
 
 
-            
+    def fairness_metrics(self,data):
+
+        y_true = list(data.fraud)
+        y_pred = list(data.fraud_pred)
+        gender = data.gender
+        race = data.race
+
+        dpd = []
+        eod = []
+        
+        for i in [gender,race]:
+
+            temp_dpd = demographic_parity_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
+            # print('dpd',temp_dpd)
+            dpd.append(temp_dpd)
+            temp_eod = equalized_odds_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
+            # print('eod',temp_eod)
+            eod.append(temp_eod)
+        # dpd = demographic_parity_difference( y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
+
+        self.eod_gender = eod[0]
+        self.eod_race = eod[1]
+        self.dpd_gender = eod[0]
+        self.dpd_race = eod[1]   
             
         
 
