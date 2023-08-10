@@ -130,7 +130,7 @@ class Person(ap.Agent):
         race = data.race
 
         # print(y_true)
-        print(sum(y_pred))
+        # print(sum(y_pred))
 
 
         dpd = []

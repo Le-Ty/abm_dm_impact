@@ -66,7 +66,7 @@ def fraud_val(wealth, fraud_det = 0):
     return np.random.choice([p_det,p_prob], 1, p =[fraud_det, 1- fraud_det])[0]    
 
 
-def classifier_train(X, y, mitigate = None, viz = False):
+def classifier_train(X, y, mitigate = 'adv', viz = False):
 
     # X = (pickle.load(open(X_name, 'rb')))
     # y = (pickle.load(open(y_name, 'rb')))
@@ -154,14 +154,15 @@ def classifier_train(X, y, mitigate = None, viz = False):
         y_pred = pipe.predict(X_test)
         print((len(y_pred) -abs(y_pred - np.array(y_test).flatten()).sum())/len(y_pred))
         print(pipe)
-        print(AdversarialFairnessClassifier)
+        # print(AdversarialFairnessClassifier.predictor_model)
  
 
 
 
         
     else:
-        pipe = make_pipeline(StandardScaler(), SGDClassifier(loss = 'log_loss', penalty = 'elasticnet', alpha = 0.01)) # BaggingClassifier(estimator=SVC(class_weight={0:0.50, 1:0.50}),n_estimators=10, random_state=0))
+        pipe = make_pipeline(StandardScaler(), MLPClassifier(solver='adam', alpha = 0.0001, hidden_layer_sizes=(30, 15), random_state=1))
+        # pipe = make_pipeline(StandardScaler(), SGDClassifier(loss = 'log_loss', penalty = 'elasticnet', alpha = 0.01)) # BaggingClassifier(estimator=SVC(class_weight={0:0.50, 1:0.50}),n_estimators=10, random_state=0))
         pipe.fit(X_train, y_train) 
         print(pipe.score(X_test,y_test))
     # clf = RandomForestClassifier(n_estimators=500)
