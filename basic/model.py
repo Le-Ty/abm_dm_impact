@@ -5,6 +5,8 @@ import networkx as nx
 import random 
 import numpy as np
 import pickle
+import gzip
+import ubjson
 
 # Visualization
 import matplotlib.pyplot as plt 
@@ -48,7 +50,7 @@ class VirusModel_baseline(ap.Model):
         #ACCESS & TREATMENT
         self.agents.fraud_algo(self.p.clf)
         
-        # self.agents.fairness_metrics(self.agents)
+        self.agents.fairness_metrics(self.agents)
 
 
         self.agents.appeal()

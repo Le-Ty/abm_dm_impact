@@ -1,14 +1,19 @@
 #libs
 from sklearn.neural_network import MLPClassifier
-from sklearn.ensemble import RandomForestClassifier, BaggingClassifier
+from sklearn.ensemble import RandomForestClassifier, BaggingClassifier, GradientBoostingClassifier, AdaBoostClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.model_selection import KFold
 from sklearn.utils import resample
+from sklearn.linear_model import SGDClassifier
+from sklearn.pipeline import Pipeline
 
+from fairlearn.reductions import DemographicParity
 from fairlearn.preprocessing import CorrelationRemover
+from fairlearn.reductions import ExponentiatedGradient
+from fairlearn.adversarial import AdversarialFairnessClassifier
 
 # Visualization
 import matplotlib.pyplot as plt 
@@ -61,7 +66,7 @@ def fraud_val(wealth, fraud_det = 0):
     return np.random.choice([p_det,p_prob], 1, p =[fraud_det, 1- fraud_det])[0]    
 
 
-def classifier_train(X, y, mitigate = 'reduce'):
+def classifier_train(X, y, mitigate = None, viz = False):
 
     # X = (pickle.load(open(X_name, 'rb')))
     # y = (pickle.load(open(y_name, 'rb')))
@@ -92,9 +97,8 @@ def classifier_train(X, y, mitigate = 'reduce'):
     y = df_up_down_sampled['y']
     X = df_up_down_sampled.drop('y', axis = 1)
     X = X.rename(columns = {0: 'race', 1:'gender', 2:'wealth', 3:'health'})
-    print(X)
 
-    if mitigate == 'decorrelate':
+    if True: #mitigate == 'decorrelate':
         cr = CorrelationRemover(sensitive_feature_ids=['race'])
         # cr.fit(X)
         X_t = cr.fit_transform(X)
@@ -102,9 +106,10 @@ def classifier_train(X, y, mitigate = 'reduce'):
         X_t = X_t.rename(columns = {0:'gender', 1:'wealth', 2:'health'})
         X_t.insert(0,'race',list(X['race']))
         # X_t.insert(0,'gender',list(X['gender']))
-        plot_heatmap(pd.DataFrame(X),X['race'],target = 'race', title= "Correlation values in the original dataset")
+        if viz:
+            plot_heatmap(pd.DataFrame(X),X['race'],target = 'race', title= "Correlation values in the original dataset")
 
-        plot_heatmap(pd.DataFrame(X_t),X['race'], target = 'race', title="Correlation values in the decorrelated dataset")
+            plot_heatmap(pd.DataFrame(X_t),X['race'], target = 'race', title="Correlation values in the decorrelated dataset")
 
         cr = CorrelationRemover(sensitive_feature_ids=['gender'])
         # cr.fit(X)
@@ -113,30 +118,57 @@ def classifier_train(X, y, mitigate = 'reduce'):
         X_t = X_t.rename(columns = {0:'race', 1:'wealth', 2:'health'})
         X_t.insert(1,'gender',list(X['gender']))
         # X_t.insert(0,'gender',list(X['gender']))
-        plot_heatmap(pd.DataFrame(X),X['gender'], target = 'gender', title="Correlation values in the original dataset")
 
-        plot_heatmap(pd.DataFrame(X_t),X['gender'], target = 'gender',  title="Correlation values in the decorrelated dataset")
+        if viz:
+            plot_heatmap(pd.DataFrame(X),X['gender'], target = 'gender', title="Correlation values in the original dataset")
+
+            plot_heatmap(pd.DataFrame(X_t),X['gender'], target = 'gender',  title="Correlation values in the decorrelated dataset")
         
         
         X = X_t
 
-    # if mitigate == 'reduce': 
-    #     dp = DemographicParity(difference_bound=0.01)
-    #     dp.load_data(X, y_true, sensitive_features=sensitive_features)
-        
-
-
-
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=1)
 
-    pipe = make_pipeline(StandardScaler(), MLPClassifier(solver='adam', alpha = 0.0001, hidden_layer_sizes=(30, 15), random_state=1)) # BaggingClassifier(estimator=SVC(class_weight={0:0.50, 1:0.50}),n_estimators=10, random_state=0))
-    pipe.fit(X_train, y_train) 
+    if mitigate == 'reduce': 
+        scaler = StandardScaler()
+        model = scaler.fit(X)
+        X_train = pd.DataFrame(model.transform(X_train), columns = ['race', 'gender', 'wealth', 'health'])
+        X_test = pd.DataFrame(model.transform(X_test), columns = ['race', 'gender', 'wealth', 'health'])
+        pipe =  ExponentiatedGradient(SGDClassifier(loss = 'log_loss', penalty = 'elasticnet', alpha = 0.01), constraints=DemographicParity(),eps=0.1)
+        pipe.fit(X_train, pd.DataFrame(y_train), sensitive_features= X_train['race'])
+        y_pred = pipe.predict(X_test)
+        print((len(y_pred) -abs(y_pred - np.array(y_test).flatten()).sum())/len(y_pred))
+    
+    elif mitigate == 'adv':
+        pipe = AdversarialFairnessClassifier(
+            backend="torch",
+            predictor_model=[50, "leaky_relu"],
+            adversary_model=[3, "leaky_relu"],
+            batch_size=2 ** 8,
+            progress_updates=0.5,
+            random_state=123,
+        )
 
+        pipe.fit(X_train, y_train, sensitive_features=X_train['race'])
+        y_pred = pipe.predict(X_test)
+        print((len(y_pred) -abs(y_pred - np.array(y_test).flatten()).sum())/len(y_pred))
+        print(pipe)
+        print(AdversarialFairnessClassifier)
+ 
+
+
+
+        
+    else:
+        pipe = make_pipeline(StandardScaler(), SGDClassifier(loss = 'log_loss', penalty = 'elasticnet', alpha = 0.01)) # BaggingClassifier(estimator=SVC(class_weight={0:0.50, 1:0.50}),n_estimators=10, random_state=0))
+        pipe.fit(X_train, y_train) 
+        print(pipe.score(X_test,y_test))
     # clf = RandomForestClassifier(n_estimators=500)
     # clf.fit(X_train, y_train)
     # score = cross_val_score(pipe, X_train, y_train, cv=cv)
-    print(pipe.score(X_test,y_test))
+
+
 
     with open("clf.pkl", "wb") as f:
         pickle.dump(pipe, f)

@@ -129,6 +129,10 @@ class Person(ap.Agent):
         gender = data.gender
         race = data.race
 
+        # print(y_true)
+        print(sum(y_pred))
+
+
         dpd = []
         eod = []
         
