@@ -20,7 +20,7 @@ from utils import classifier_train, generate_init
 
 class VirusModel_baseline(ap.Model):
     
-    def setup(self, n_train = 10000): #before
+    def setup(self, n_train = 50000): #before
         """ Initialize the agents and network of the model. """
         
         # Create agents and network
@@ -30,8 +30,11 @@ class VirusModel_baseline(ap.Model):
         # first classifier trained on same distribution
         #load distributions
         if self.p.clf == 'hist':
-            x,y = generate_init(True, n_train)
+            x,y = generate_init(True, n_train, self.p.fraud_det)
             classifier_train(x, y)
+        elif self.p.clf == 'pretrained':
+            print('using predtrined clf')
+
 
         
 

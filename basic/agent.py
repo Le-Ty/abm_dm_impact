@@ -5,6 +5,7 @@ import random
 import numpy as np
 import sklearn
 import pickle
+import pandas as pd
 
 # Visualization
 import matplotlib.pyplot as plt 
@@ -57,6 +58,7 @@ class Person(ap.Agent):
         if classifier != None:
 
             agent = [[self.race, self.gender, self.wealth, self.health]]
+            agent = pd.DataFrame(agent, columns = ['race', 'gender', 'wealth', 'health'])
             with open("clf.pkl", "rb") as f:
                 clf = pickle.load(f)    
             self.fraud_pred = clf.predict(agent)[0]
@@ -122,7 +124,7 @@ class Person(ap.Agent):
     #     if self.pers_resources 
 
 
-    def fairness_metrics(self,data):
+    def fairness_metrics(self,data, print = False):
 
         y_true = list(data.fraud)
         y_pred = list(data.fraud_pred)
@@ -139,17 +141,18 @@ class Person(ap.Agent):
         for i in [gender,race]:
 
             temp_dpd = demographic_parity_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
-            # print('dpd',temp_dpd)
             dpd.append(temp_dpd)
             temp_eod = equalized_odds_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
-            # print('eod',temp_eod)
+            if print:
+                print('dpd',temp_dpd)
+                print('eod',temp_eod)
             eod.append(temp_eod)
         # dpd = demographic_parity_difference( y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
-
-        self.eod_gender = eod[0]
-        self.eod_race = eod[1]
-        self.dpd_gender = eod[0]
-        self.dpd_race = eod[1]   
+        if not print:
+            self.eod_gender = eod[0]
+            self.eod_race = eod[1]
+            self.dpd_gender = eod[0]
+            self.dpd_race = eod[1]   
             
         
 

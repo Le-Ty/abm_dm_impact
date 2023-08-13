@@ -14,6 +14,7 @@ from fairlearn.reductions import DemographicParity
 from fairlearn.preprocessing import CorrelationRemover
 from fairlearn.reductions import ExponentiatedGradient
 from fairlearn.adversarial import AdversarialFairnessClassifier
+from fairlearn.metrics import equalized_odds_ratio, demographic_parity_ratio
 
 # Visualization
 import matplotlib.pyplot as plt 
@@ -66,7 +67,7 @@ def fraud_val(wealth, fraud_det = 0):
     return np.random.choice([p_det,p_prob], 1, p =[fraud_det, 1- fraud_det])[0]    
 
 
-def classifier_train(X, y, mitigate = 'adv', viz = False):
+def classifier_train(X, y, mitigate = 'None', viz = False):
 
     # X = (pickle.load(open(X_name, 'rb')))
     # y = (pickle.load(open(y_name, 'rb')))
@@ -141,6 +142,7 @@ def classifier_train(X, y, mitigate = 'adv', viz = False):
         print((len(y_pred) -abs(y_pred - np.array(y_test).flatten()).sum())/len(y_pred))
     
     elif mitigate == 'adv':
+
         pipe = AdversarialFairnessClassifier(
             backend="torch",
             predictor_model=[50, "leaky_relu"],
@@ -164,10 +166,18 @@ def classifier_train(X, y, mitigate = 'adv', viz = False):
         pipe = make_pipeline(StandardScaler(), MLPClassifier(solver='adam', alpha = 0.0001, hidden_layer_sizes=(30, 15), random_state=1))
         # pipe = make_pipeline(StandardScaler(), SGDClassifier(loss = 'log_loss', penalty = 'elasticnet', alpha = 0.01)) # BaggingClassifier(estimator=SVC(class_weight={0:0.50, 1:0.50}),n_estimators=10, random_state=0))
         pipe.fit(X_train, y_train) 
+        y_pred = pipe.predict(X_test)
         print(pipe.score(X_test,y_test))
     # clf = RandomForestClassifier(n_estimators=500)
     # clf.fit(X_train, y_train)
     # score = cross_val_score(pipe, X_train, y_train, cv=cv)
+
+    X_test['fraud_pred'] = y_pred
+    print(X_test)
+    X_test['fraud'] = list(y_test)
+    print(X_test)
+    fairness_metrics(X_test)
+
 
 
 
@@ -275,6 +285,22 @@ def plot_heatmap(df,y, target, title = 'correlation matrix'):
 
 
 
+def fairness_metrics(data):
+
+    y_true = list(data.fraud)
+    y_pred = list(data.fraud_pred)
+    gender = data.gender
+    race = data.race
+
+    
+    for i in [gender,race]:
+
+        temp_dpd = demographic_parity_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
+        temp_eod = equalized_odds_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
+
+        print('dpd',temp_dpd)
+        print('eod',temp_eod)
+    # dpd = demographic_parity_difference( y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
 
 
 
