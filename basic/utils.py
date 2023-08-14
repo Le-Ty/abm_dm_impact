@@ -39,21 +39,56 @@ def viz(data, x, y, hue):
 
 
 
+def transform_pd(df_baseline):
+
+    df_baseline['misclassifications'] = abs(df_baseline['fraud_pred'] - df_baseline['fraud'])
+    df_baseline[df_baseline['fraud_pred'] ==0]['wealth'].min()
+
+    df_baseline.head()
+    df_baseline = df_baseline[df_baseline.fraud_pred != -1]
+    df_baseline[df_baseline['misclassifications'] == 0]
+
+    df_baseline['intersect'] = list(df_baseline['gender'])
+    mask1 = ((df_baseline['gender'] == 0) & (df_baseline['race'] == 0))
+    df_baseline.loc[mask1, 'intersect'] = 'fw'
+    mask2 = ((df_baseline['gender'] == 1) & (df_baseline['race'] == 0))
+    df_baseline.loc[mask2, 'intersect'] = 'mw'
+
+    mask3 = ((df_baseline['gender'] == 0) & (df_baseline['race'] == 1))
+    df_baseline.loc[mask3, 'intersect'] = 'fnw'
+
+    mask4 = ((df_baseline['gender'] == 1) & (df_baseline['race'] == 1))
+    df_baseline.loc[mask4, 'intersect'] = 'mnw'
+
+    return df_baseline
+
 
 def delta_function(disc_axis, y_axis, df, df_baseline):
     """ Delta function visualizes absolute difference between baseline scenario and more complex scenario """
 
-    df_b1 = df_baseline.iloc[(df_baseline[disc_axis] == 1).values] 
-    df_wb1 = df.iloc[(df[disc_axis] == 1).values][y_axis] - df_b1.groupby(level='t').mean()[y_axis]
-    df_x1 = df.iloc[(df[disc_axis] == 1).values]
-    df_x1[y_axis] = df_wb1
+    if disc_axis == 'intersect':
+        data = []
+        for i in ['fnw', 'fw', 'mnw', 'mw']:
+            df_b1 = df_baseline.iloc[(df_baseline[disc_axis] == i).values] 
+            df_wb1 = df.iloc[(df[disc_axis] == i).values][y_axis] - df_b1.groupby(level='t').mean()[y_axis]
+            df_x1 = df.iloc[(df[disc_axis] == i).values]
+            df_x1[y_axis] = df_wb1
+            data.append(df_x1)
+        data = pd.concat(data)
+
+    else:
+        df_b1 = df_baseline.iloc[(df_baseline[disc_axis] == 1).values] 
+        df_wb1 = df.iloc[(df[disc_axis] == 1).values][y_axis] - df_b1.groupby(level='t').mean()[y_axis]
+        df_x1 = df.iloc[(df[disc_axis] == 1).values]
+        df_x1[y_axis] = df_wb1
+        
+        df_b0 = df_baseline.iloc[(df_baseline[disc_axis] == 0).values] 
+        df_wb0 = df.iloc[(df[disc_axis] == 0).values] [y_axis] - df_b0.groupby(level='t').mean()[y_axis]
+        df_x0 = df.iloc[(df[disc_axis] == 0).values]
+        df_x0[y_axis] = df_wb0
+        data = pd.concat([df_x0, df_x1])
     
-    df_b0 = df_baseline.iloc[(df_baseline[disc_axis] == 0).values] 
-    df_wb0 = df.iloc[(df[disc_axis] == 0).values] [y_axis] - df_b0.groupby(level='t').mean()[y_axis]
-    df_x0 = df.iloc[(df[disc_axis] == 0).values]
-    df_x0[y_axis] = df_wb0
-    
-    return pd.concat([df_x0, df_x1])
+    return data
 
 
 def fraud_val(wealth, fraud_det = 0):
@@ -112,21 +147,20 @@ def classifier_train(X, y, mitigate = 'None', viz = False):
 
             plot_heatmap(pd.DataFrame(X_t),X['race'], target = 'race', title="Correlation values in the decorrelated dataset")
 
-        cr = CorrelationRemover(sensitive_feature_ids=['gender'])
-        # cr.fit(X)
-        X_t = cr.fit_transform(X)
-        X_t = pd.DataFrame(X_t)
-        X_t = X_t.rename(columns = {0:'race', 1:'wealth', 2:'health'})
-        X_t.insert(1,'gender',list(X['gender']))
+        cr2 = CorrelationRemover(sensitive_feature_ids=['gender'])
+        X_t2 = cr2.fit_transform(X_t)
+        X_t2 = pd.DataFrame(X_t2)
+        X_t2 = X_t2.rename(columns = {0:'race', 1:'wealth', 2:'health'})
+        X_t2.insert(1,'gender',list(X['gender']))
         # X_t.insert(0,'gender',list(X['gender']))
 
         if viz:
             plot_heatmap(pd.DataFrame(X),X['gender'], target = 'gender', title="Correlation values in the original dataset")
 
-            plot_heatmap(pd.DataFrame(X_t),X['gender'], target = 'gender',  title="Correlation values in the decorrelated dataset")
+            plot_heatmap(pd.DataFrame(X_t2),X['gender'], target = 'gender',  title="Correlation values in the decorrelated dataset")
         
         
-        X = X_t
+        X = X_t2
 
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, random_state=1)
@@ -181,7 +215,7 @@ def classifier_train(X, y, mitigate = 'None', viz = False):
 
 
 
-    with open("clf.pkl", "wb") as f:
+    with open("clf7.pkl", "wb") as f:
         pickle.dump(pipe, f)
 
 

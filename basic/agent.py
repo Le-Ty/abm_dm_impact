@@ -59,7 +59,7 @@ class Person(ap.Agent):
 
             agent = [[self.race, self.gender, self.wealth, self.health]]
             agent = pd.DataFrame(agent, columns = ['race', 'gender', 'wealth', 'health'])
-            with open("clf.pkl", "rb") as f:
+            with open("clf_det0_6.pkl", "rb") as f:
                 clf = pickle.load(f)    
             self.fraud_pred = clf.predict(agent)[0]
             # self.fraud_pred = np.rint(self.fraud_pred[0]) 
@@ -151,8 +151,8 @@ class Person(ap.Agent):
         if not print:
             self.eod_gender = eod[0]
             self.eod_race = eod[1]
-            self.dpd_gender = eod[0]
-            self.dpd_race = eod[1]   
+            self.dpd_gender = dpd[0]
+            self.dpd_race = dpd[1]   
             
         
 
