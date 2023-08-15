@@ -23,6 +23,7 @@ import pandas as pd
 import pickle
 import numpy as np
 import random
+import os
 
 
 def viz(data, x, y, hue):
@@ -134,7 +135,7 @@ def classifier_train(X, y, mitigate = 'None', viz = False):
     X = df_up_down_sampled.drop('y', axis = 1)
     X = X.rename(columns = {0: 'race', 1:'gender', 2:'wealth', 3:'health'})
 
-    if True: #mitigate == 'decorrelate':
+    if False: #mitigate == 'decorrelate':
         cr = CorrelationRemover(sensitive_feature_ids=['race'])
         # cr.fit(X)
         X_t = cr.fit_transform(X)
@@ -197,7 +198,7 @@ def classifier_train(X, y, mitigate = 'None', viz = False):
 
         
     else:
-        pipe = make_pipeline(StandardScaler(), MLPClassifier(solver='adam', alpha = 0.0001, hidden_layer_sizes=(30, 15), random_state=1))
+        pipe = make_pipeline(StandardScaler(), MLPClassifier(solver='adam', alpha = 0.001, hidden_layer_sizes=(30, 15), random_state=1))
         # pipe = make_pipeline(StandardScaler(), SGDClassifier(loss = 'log_loss', penalty = 'elasticnet', alpha = 0.01)) # BaggingClassifier(estimator=SVC(class_weight={0:0.50, 1:0.50}),n_estimators=10, random_state=0))
         pipe.fit(X_train, y_train) 
         y_pred = pipe.predict(X_test)
@@ -215,20 +216,24 @@ def classifier_train(X, y, mitigate = 'None', viz = False):
 
 
 
-    with open("clf7.pkl", "wb") as f:
+    with open("clfq.pkl", "wb") as f:
         pickle.dump(pipe, f)
 
 
 def generate_init(train_clf = True, n = 1, fraud_det = 0):
 
+
     np.random.seed(42)
 
-    with open("data/distributions_init.pickle", "rb") as f:
+    dir1 = ("/gpfs/home4/ltiyavorabu/abm/basic/data/distributions_init.pickle")
+    dir2 = ("/gpfs/home4/ltiyavorabu/abm/basic/data/distributions_init.pickle")
+
+    with open(("data/distributions_init.pickle"), "rb") as f:
         d_fnw = pickle.load(f)
         d_mw = pickle.load(f)
         d_mnw = pickle.load(f)
         d_fw = pickle.load(f)
-    with open("data/values_init.pickle", "rb") as f:
+    with open(("data/distributions_init.pickle"), "rb") as f:
         v_fnw = pickle.load(f)
         v_mw = pickle.load(f)
         v_mnw = pickle.load(f)

@@ -6,6 +6,7 @@ import numpy as np
 import sklearn
 import pickle
 import pandas as pd
+import os
 
 # Visualization
 import matplotlib.pyplot as plt 
@@ -49,17 +50,19 @@ class Person(ap.Agent):
     def fraud_algo(self, classifier = True):
         """ DM mechanism can also be ML"""
 
+        path = os.path.abspath(os.getcwd())
         self.resources = self.wealth
         self.fraud_pred =0
 
         # decide how much influence the resources have 
         res_weight = 0.3
 
-        if classifier != None:
-
+        if classifier != 'None':
             agent = [[self.race, self.gender, self.wealth, self.health]]
+            # filename = ("/gpfs/home4/ltiyavorabu/abm/basic/"+classifier)
+            filename = classifier
             agent = pd.DataFrame(agent, columns = ['race', 'gender', 'wealth', 'health'])
-            with open("clf_det0_6.pkl", "rb") as f:
+            with open(filename, "rb") as f:
                 clf = pickle.load(f)    
             self.fraud_pred = clf.predict(agent)[0]
             # self.fraud_pred = np.rint(self.fraud_pred[0]) 
@@ -138,21 +141,31 @@ class Person(ap.Agent):
         dpd = []
         eod = []
         
-        for i in [gender,race]:
 
-            temp_dpd = demographic_parity_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
-            dpd.append(temp_dpd)
-            temp_eod = equalized_odds_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
-            if print:
-                print('dpd',temp_dpd)
-                print('eod',temp_eod)
-            eod.append(temp_eod)
+        for i in [gender,race]:
+            if (sum(y_true) != 0 and sum(y_pred) != 0):
+                try:
+                    temp_dpd = demographic_parity_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
+                except ZeroDivisionError:
+                    temp_dpd = 0
+                dpd.append(temp_dpd)
+                try:
+                    temp_eod = equalized_odds_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
+                except ZeroDivisionError:
+                    temp_eod = 0
+                if print:
+                    print('dpd',temp_dpd)
+                    print('eod',temp_eod)
+                eod.append(temp_eod)
+
+
         # dpd = demographic_parity_difference( y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
-        if not print:
-            self.eod_gender = eod[0]
-            self.eod_race = eod[1]
-            self.dpd_gender = dpd[0]
-            self.dpd_race = dpd[1]   
+        if (sum(y_true) != 0 and sum(y_pred) != 0):
+            if not print:
+                self.eod_gender = eod[0]
+                self.eod_race = eod[1]
+                self.dpd_gender = dpd[0]
+                self.dpd_race = dpd[1]   
             
         
 

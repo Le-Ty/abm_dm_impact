@@ -5,8 +5,7 @@ import networkx as nx
 import random 
 import numpy as np
 import pickle
-import gzip
-import ubjson
+
 
 # Visualization
 import matplotlib.pyplot as plt 
@@ -32,8 +31,10 @@ class VirusModel_baseline(ap.Model):
         if self.p.clf == 'hist':
             x,y = generate_init(True, n_train, self.p.fraud_det)
             classifier_train(x, y)
-        elif self.p.clf == 'pretrained':
-            print('using predtrined clf')
+        elif self.p.clf != "None" :
+            print('using pretrained clf')
+
+      
 
 
         
@@ -303,4 +304,3 @@ class VirusModel(ap.Model):
         
 #         self.report('w_wr_ratio', w_wr_ratio)
 #         self.report('nw_wr_ratio', nw_wr_ratio)
-            
