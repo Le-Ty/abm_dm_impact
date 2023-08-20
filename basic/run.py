@@ -24,8 +24,8 @@ def run_model(clf,expi):
 
     parameters = {
         'my_parameter':42,
-        'agents':50,
-        'steps':10,
+        'agents':500,
+        'steps':100,
         'wealth_appeal_corr': 0, # >0 more wealth higher appeal chance
         'acc': 0.6, # accuracy of fraud prdediction
         'conviction_rate': 1,
@@ -48,13 +48,12 @@ def run_model(clf,expi):
 
 
 
-
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--clf", default="None", help = "classifier")
     parser.add_argument("-e", "--expi", metavar="IMAGE_FLIP", help = "experiment")
-    parser.add_argument("-o", "--out", metavar="IMAGE_FLIP", help = "outputdir")
+    parser.add_argument("-o", "--out", metavar="IMAGE_FLIP", help = "outputdir", default = '')
 
     args = parser.parse_args()
     kwargs = vars(args)
@@ -64,10 +63,11 @@ if __name__ == '__main__':
 
     df = run_model(clf,expi)
 
-    filename =  (outdir + 'df_ {} _{}').format(clf,expi)
+    filename =  (outdir + '/df_{}_{}.pkl').format(clf,expi)
 
     with open(filename, "wb") as handle:
         pickle.dump(df, handle) 
+        print('saved '+ filename)
 
 
      

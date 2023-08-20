@@ -59,8 +59,8 @@ class Person(ap.Agent):
 
         if classifier != 'None':
             agent = [[self.race, self.gender, self.wealth, self.health]]
-            # filename = ("/gpfs/home4/ltiyavorabu/abm/basic/"+classifier)
-            filename = classifier
+            filename = ("/gpfs/home4/ltiyavorabu/abm/basic/"+classifier)
+            # filename = classifier
             agent = pd.DataFrame(agent, columns = ['race', 'gender', 'wealth', 'health'])
             with open(filename, "rb") as f:
                 clf = pickle.load(f)    

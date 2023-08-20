@@ -100,7 +100,14 @@ def fraud_val(wealth, fraud_det = 0):
         p_det = 0
     
     p_prob = rng.binomial(1,np.clip(((wealth-0.75)**4+0.3), 0,0.9))
-    return np.random.choice([p_det,p_prob], 1, p =[fraud_det, 1- fraud_det])[0]    
+    return np.random.choice([p_det,p_prob], 1, p =[fraud_det, 1- fraud_det])[0]   
+
+
+def non_compliance(tolerance =0.3):
+    #weight requirements 
+    non_compliance = weighted_resources + tolerance
+
+
 
 
 def classifier_train(X, y, mitigate = 'None', viz = False):
@@ -226,14 +233,17 @@ def generate_init(train_clf = True, n = 1, fraud_det = 0):
     np.random.seed(42)
 
     dir1 = ("/gpfs/home4/ltiyavorabu/abm/basic/data/distributions_init.pickle")
-    dir2 = ("/gpfs/home4/ltiyavorabu/abm/basic/data/distributions_init.pickle")
+    dir2 = ("/gpfs/home4/ltiyavorabu/abm/basic/data/values_init.pickle")
 
-    with open(("data/distributions_init.pickle"), "rb") as f:
+    local1 = ("data/distributions_init.pickle")
+    local2 = ("data/values_init.pickle")
+
+    with open(dir1, "rb") as f:
         d_fnw = pickle.load(f)
         d_mw = pickle.load(f)
         d_mnw = pickle.load(f)
         d_fw = pickle.load(f)
-    with open(("data/distributions_init.pickle"), "rb") as f:
+    with open(dir2, "rb") as f:
         v_fnw = pickle.load(f)
         v_mw = pickle.load(f)
         v_mnw = pickle.load(f)
