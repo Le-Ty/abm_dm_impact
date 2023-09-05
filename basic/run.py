@@ -20,21 +20,22 @@ import IPython
 import pickle
 import argparse
 
-def run_model(clf,expi):
+def run_model(clf,expi, star_version):
 
     parameters = {
         'my_parameter':42,
         'agents':500,
         'steps':100,
         'wealth_appeal_corr': 0, # >0 more wealth higher appeal chance
-        'acc': 0.6, # accuracy of fraud prdediction
+        'acc': 0.8, # accuracy of fraud prdediction
         'conviction_rate': 1,
         'appeal_wealth': 0.3, # minimal wealth needed for appeal (could also become a param for distr. eventually)
         #'wealth_impact',
         'clf' : clf,
         'expi' : expi,
         'fraud_det': 0,
-        'fairness_metrics' : True
+        'fairness_metrics' : True,
+        'star_version': star_version
         
     }
     
@@ -54,14 +55,16 @@ if __name__ == '__main__':
     parser.add_argument("-c", "--clf", default="None", help = "classifier")
     parser.add_argument("-e", "--expi", metavar="IMAGE_FLIP", help = "experiment")
     parser.add_argument("-o", "--out", metavar="IMAGE_FLIP", help = "outputdir", default = '')
+    parser.add_argument("-s", "--star", metavar="star version", help = "starversion", default = None)
 
     args = parser.parse_args()
     kwargs = vars(args)
     clf = kwargs.pop("clf")
     expi = kwargs.pop("expi")
     outdir = kwargs.pop("out")
+    star_version = kwargs.pop("star")
 
-    df = run_model(clf,expi)
+    df = run_model(clf,expi, star_version)
 
     filename =  (outdir + '/df_{}_{}.pkl').format(clf,expi)
 

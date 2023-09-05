@@ -14,7 +14,7 @@ import seaborn as sns
 import IPython
 
 #import other functions
-from utils import generate_init
+from utils import generate_init, generate_star
 
 from fairlearn.metrics import equalized_odds_ratio, demographic_parity_ratio
 
@@ -40,7 +40,7 @@ class Person(ap.Agent):
         """
 
         # probability functions
-        self.race,self.gender,self.wealth,self.health,self.fraud,self.fraud_pred,self.convicted = generate_init(train_clf = False, n =1)
+        self.race,self.gender,self.wealth,self.health,self.star,self.fraud,self.fraud_pred,self.convicted = generate_init(self.p.star_version, self.p.acc, train_clf = False, n =1)
         self.dpd_race = 0
         self.dpd_gender = 0
         self.eod_race = 0
@@ -58,10 +58,16 @@ class Person(ap.Agent):
         res_weight = 0.3
 
         if classifier != 'None':
-            agent = [[self.race, self.gender, self.wealth, self.health]]
+           
             filename = ("/gpfs/home4/ltiyavorabu/abm/basic/"+classifier)
             # filename = classifier
-            agent = pd.DataFrame(agent, columns = ['race', 'gender', 'wealth', 'health'])
+            if self.p.star_version != None:
+                agent = [[self.race, self.gender, self.wealth, self.health, self.star]]
+                agent = pd.DataFrame(agent, columns = ['race', 'gender', 'wealth', 'health', 'star'])
+            else:
+                agent = [[self.race, self.gender, self.wealth, self.health]]
+                agent = pd.DataFrame(agent, columns = ['race', 'gender', 'wealth', 'health'])
+            
             with open(filename, "rb") as f:
                 clf = pickle.load(f)    
             self.fraud_pred = clf.predict(agent)[0]
@@ -127,7 +133,8 @@ class Person(ap.Agent):
     #     if self.pers_resources 
 
 
-    def fairness_metrics(self,data, print = False):
+    def fairness_metrics(self,data, pr = False):
+
 
         y_true = list(data.fraud)
         y_pred = list(data.fraud_pred)
@@ -135,25 +142,28 @@ class Person(ap.Agent):
         race = data.race
 
         # print(y_true)
+        # print(y_pred)
+        # print(gender,race)
         # print(sum(y_pred))
 
 
         dpd = []
         eod = []
-        
 
         for i in [gender,race]:
             if (sum(y_true) != 0 and sum(y_pred) != 0):
+                
                 try:
                     temp_dpd = demographic_parity_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
                 except ZeroDivisionError:
                     temp_dpd = 0
+                print(temp_dpd)
                 dpd.append(temp_dpd)
                 try:
                     temp_eod = equalized_odds_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
                 except ZeroDivisionError:
                     temp_eod = 0
-                if print:
+                if pr:
                     print('dpd',temp_dpd)
                     print('eod',temp_eod)
                 eod.append(temp_eod)
@@ -161,18 +171,10 @@ class Person(ap.Agent):
 
         # dpd = demographic_parity_difference( y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
         if (sum(y_true) != 0 and sum(y_pred) != 0):
-            if not print:
+            if not pr:
                 self.eod_gender = eod[0]
                 self.eod_race = eod[1]
                 self.dpd_gender = dpd[0]
                 self.dpd_race = dpd[1]   
             
-        
-
-
-#     def step(self):
-#         # The agent's step will go here.
-#         # For demonstration purposes we will print the agent's unique_id
-#         self.appeal()
-#         print("Hi, I am agent " + str(self.unique_id) + ".")
-#         # print("my wealth, job, fraud, fraud_pred is:" + str(self.wealth)+ str(self.job) + str(self.fraud)+ str(self.fraud_pred))
+     
