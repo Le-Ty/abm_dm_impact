@@ -6,3 +6,4 @@ basic/data/
 .vscode/
 .ipynb_checkpoints/
 basic/__pycache__/
+*.pkl
