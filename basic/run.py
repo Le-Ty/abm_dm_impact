@@ -1,7 +1,6 @@
-
 # imports
 from agent import Person
-from model import VirusModel, VirusModel_baseline
+from model import TaxFraudModel
 from utils import transform_pd
 
 # Model design
@@ -20,13 +19,12 @@ import IPython
 import pickle
 import argparse
 
-def run_model(clf,expi, star_version):
+def run_model(clf,expi, star_version, synth_data_acc, abm_eval):
 
     parameters = {
         'my_parameter':42,
-        'agents':500,
-        'steps':100,
-        'wealth_appeal_corr': 0, # >0 more wealth higher appeal chance
+        'agents':50,
+        'steps':10,
         'acc': 0.8, # accuracy of fraud prdediction
         'conviction_rate': 1,
         'appeal_wealth': 0.3, # minimal wealth needed for appeal (could also become a param for distr. eventually)
@@ -35,11 +33,13 @@ def run_model(clf,expi, star_version):
         'expi' : expi,
         'fraud_det': 0,
         'fairness_metrics' : True,
-        'star_version': star_version
+        'star_version': star_version,
+        'synth_data_acc' : synth_data_acc, 
+        'abm_eval' : abm_eval
         
     }
     
-    exp1 = ap.Experiment(VirusModel_baseline, parameters, iterations =10, record=True)
+    exp1 = ap.Experiment(TaxFraudModel, parameters, iterations =1, record=True)
     results_baseline = exp1.run() 
     df_baseline = results_baseline['variables']['Person']
     df_baseline_mlp = transform_pd(df_baseline)
@@ -56,6 +56,8 @@ if __name__ == '__main__':
     parser.add_argument("-e", "--expi", metavar="IMAGE_FLIP", help = "experiment")
     parser.add_argument("-o", "--out", metavar="IMAGE_FLIP", help = "outputdir", default = '')
     parser.add_argument("-s", "--star", metavar="star version", help = "starversion", default = None)
+    parser.add_argument("-a", "--abm_eval", metavar="abm eval", help = "starversion", default = None)
+    parser.add_argument("-sda", "--synth_data_acc", metavar="synthetic data cc", help = "starversion", default = None, type = float)
 
     args = parser.parse_args()
     kwargs = vars(args)
@@ -63,8 +65,10 @@ if __name__ == '__main__':
     expi = kwargs.pop("expi")
     outdir = kwargs.pop("out")
     star_version = kwargs.pop("star")
+    abm_eval = kwargs.pop("abm_eval")
+    synth_data_acc = kwargs.pop("synth_data_acc")
 
-    df = run_model(clf,expi, star_version)
+    df = run_model(clf,expi, star_version, synth_data_acc, abm_eval)
 
     filename =  (outdir + '/df_{}_{}.pkl').format(clf,expi)
 

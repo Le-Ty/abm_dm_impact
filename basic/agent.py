@@ -14,7 +14,7 @@ import seaborn as sns
 import IPython
 
 #import other functions
-from utils import generate_init, generate_star
+from generate_data import generate_init
 
 from fairlearn.metrics import equalized_odds_ratio, demographic_parity_ratio
 
@@ -40,7 +40,7 @@ class Person(ap.Agent):
         """
 
         # probability functions
-        self.race,self.gender,self.wealth,self.health,self.star,self.fraud,self.fraud_pred,self.convicted = generate_init(self.p.star_version, self.p.acc, train_clf = False, n =1)
+        self.race,self.gender,self.wealth,self.health,self.star,self.fraud,self.fraud_pred,self.convicted = generate_init(self.p.star_version, self.p.synth_data_acc, self.p.abm_eval, train_clf = False, n =1)
         self.dpd_race = 0
         self.dpd_gender = 0
         self.eod_race = 0
@@ -59,8 +59,8 @@ class Person(ap.Agent):
 
         if classifier != 'None':
            
-            filename = ("/gpfs/home4/ltiyavorabu/abm/basic/"+classifier)
-            # filename = classifier
+            # filename = ("/gpfs/home4/ltiyavorabu/abm/basic/clfs/"+classifier)
+            filename = ("clfs/" + classifier)
             if self.p.star_version != None:
                 agent = [[self.race, self.gender, self.wealth, self.health, self.star]]
                 agent = pd.DataFrame(agent, columns = ['race', 'gender', 'wealth', 'health', 'star'])
@@ -126,11 +126,6 @@ class Person(ap.Agent):
         self.wealth = min(1,self.wealth+pow(self.wealth,2)*0.1)
 
 
-    # def bureaucratics(self):
-    #     """ This function is a collection of smaller functions that determine the threshold that the bureaucratic process imposes on people.
-    #         Takes resources and applies function that weighs impact of resources."""
-
-    #     if self.pers_resources 
 
 
     def fairness_metrics(self,data, pr = False):
@@ -157,7 +152,6 @@ class Person(ap.Agent):
                     temp_dpd = demographic_parity_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
                 except ZeroDivisionError:
                     temp_dpd = 0
-                print(temp_dpd)
                 dpd.append(temp_dpd)
                 try:
                     temp_eod = equalized_odds_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
@@ -176,5 +170,7 @@ class Person(ap.Agent):
                 self.eod_race = eod[1]
                 self.dpd_gender = dpd[0]
                 self.dpd_race = dpd[1]   
+                self.eval_acc = 1 - abs(sum(np.array(y_true)-np.array(y_pred)))/len(y_true)
+
             
      
