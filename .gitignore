@@ -2,6 +2,7 @@
 stuff/
 ap_output/
 basic/data/
+clfs/
 .DS_Store
 .vscode/
 .ipynb_checkpoints/
