@@ -99,7 +99,7 @@ def generate_init(star_version, synth_data_acc, abm_eval, train_clf = True, n = 
         
 
         if star_version == None:
-            fraud = fraud_val(wealth, fraud_det, False)
+            fraud_train = fraud_val(wealth, fraud_det, False)
         
         else:
             gt_fraud = fraud_val(wealth, fraud_det, True)
@@ -107,20 +107,19 @@ def generate_init(star_version, synth_data_acc, abm_eval, train_clf = True, n = 
             if abm_eval == 'GT':
                 abm_eval_fraud = gt_fraud
                 fraud_train = generate_bias(i, gender, wealth, health, gt_fraud, star_version)[0]
-                print(synth_data_acc, fraud_train)
-                star = rng.choice([fraud_train, 1- fraud_train], 1, p = [synth_data_acc, 1- synth_data_acc])
+                star = rng.choice([fraud_train, 1- fraud_train], 1, p = [synth_data_acc, 1- synth_data_acc])[0]
             
             else:
                 fraud_train = abm_eval_fraud = generate_bias(i, gender, wealth, health, gt_fraud, star_version)[0] 
-                star =  rng.choice([fraud_train, 1- fraud_train], 1, p = [synth_data_acc, 1- synth_data_acc])
+                star =  rng.choice([fraud_train, 1- fraud_train], 1, p = [synth_data_acc, 1- synth_data_acc])[0]
         
 
             
 
         
         if train_clf:
-            x.append([i,gender,wealth,health, fraud_train])
-            y.append(fraud)
+            x.append([i,gender,wealth,health, star])
+            y.append(fraud_train)
         else:
             g.append(gender)
             w.append(wealth)
@@ -178,6 +177,10 @@ def generate_bias(race, gender, wealth, health, fraud, star_version, star_acc = 
             star = rng.choice([fraud, 1- fraud], 1, p = [star_acc + 0.15, 1- star_acc - 0.15])
         else:
             star = rng.choice([fraud, 1- fraud], 1, p = [star_acc - 0.0125, 1- star_acc + 0.0125])
+
+    elif star_version == 'hist':
+        
+        raise NotImplementedError
     else:
         raise ValueError('generate_star did not get the correct variable, check the paramters of the ABM')
 

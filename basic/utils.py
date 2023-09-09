@@ -146,8 +146,8 @@ def fairness_metrics(data):
         temp_dpd = demographic_parity_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
         temp_eod = equalized_odds_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
 
-        # print('dpd',temp_dpd)
-        # print('eod',temp_eod)
+        print('dpd',temp_dpd)
+        print('eod',temp_eod)
     # dpd = demographic_parity_difference( y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
 
 

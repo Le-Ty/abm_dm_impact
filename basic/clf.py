@@ -26,6 +26,7 @@ import random
 import os
 
 from utils import plot_heatmap
+from utils import fairness_metrics
 
 
 
@@ -63,7 +64,7 @@ def classifier_train_star(X, y, mitigate = 'None', viz = False):
     X = df_up_down_sampled.drop('y', axis = 1)
     X = X.rename(columns = {0: 'race', 1:'gender', 2:'wealth', 3:'health', 4:'star'})
 
-    if True: #mitigate == 'decorrelate':
+    if False: #mitigate == 'decorrelate':
         cr = CorrelationRemover(sensitive_feature_ids=['race'])
         # cr.fit(X)
         X_t = cr.fit_transform(X)
@@ -144,7 +145,7 @@ def classifier_train_star(X, y, mitigate = 'None', viz = False):
 
 
 
-    with open("star_is4.pkl", "wb") as f:
+    with open("s_is2.pkl", "wb") as f:
         pickle.dump(pipe, f)
 
 def classifier_train(X, y, mitigate = 'None', viz = False):
@@ -179,7 +180,7 @@ def classifier_train(X, y, mitigate = 'None', viz = False):
     X = df_up_down_sampled.drop('y', axis = 1)
     X = X.rename(columns = {0: 'race', 1:'gender', 2:'wealth', 3:'health'})
 
-    if True: #mitigate == 'decorrelate':
+    if False: #mitigate == 'decorrelate':
         cr = CorrelationRemover(sensitive_feature_ids=['race'])
         # cr.fit(X)
         X_t = cr.fit_transform(X)
@@ -260,5 +261,5 @@ def classifier_train(X, y, mitigate = 'None', viz = False):
 
 
 
-    with open("clf.pkl", "wb") as f:
+    with open("s_is3_08.pkl", "wb") as f:
         pickle.dump(pipe, f)
