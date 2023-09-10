@@ -59,8 +59,8 @@ class Person(ap.Agent):
 
         if classifier != 'None':
            
-            # filename = ("/gpfs/home4/ltiyavorabu/abm/basic/clfs/"+classifier)
-            filename = ("clfs/" + classifier)
+            filename = ("/gpfs/home4/ltiyavorabu/abm/basic/"+classifier)
+            # filename = ("clfs/" + classifier)
             if self.p.star_version != None:
                 agent = [[self.race, self.gender, self.wealth, self.health, self.star]]
                 agent = pd.DataFrame(agent, columns = ['race', 'gender', 'wealth', 'health', 'star'])

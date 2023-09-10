@@ -61,12 +61,12 @@ def generate_init(star_version, synth_data_acc, abm_eval, train_clf = True, n = 
     local1 = ("data/distributions_init.pickle")
     local2 = ("data/values_init.pickle")
 
-    with open(local1, "rb") as f:
+    with open(dir1, "rb") as f:
         d_fnw = pickle.load(f)
         d_mw = pickle.load(f)
         d_mnw = pickle.load(f)
         d_fw = pickle.load(f)
-    with open(local2, "rb") as f:
+    with open(dir2, "rb") as f:
         v_fnw = pickle.load(f)
         v_mw = pickle.load(f)
         v_mnw = pickle.load(f)
@@ -108,6 +108,12 @@ def generate_init(star_version, synth_data_acc, abm_eval, train_clf = True, n = 
                 abm_eval_fraud = gt_fraud
                 fraud_train = generate_bias(i, gender, wealth, health, gt_fraud, star_version)[0]
                 star = rng.choice([fraud_train, 1- fraud_train], 1, p = [synth_data_acc, 1- synth_data_acc])[0]
+
+            elif abm_eval == "HIST":
+                abm_eval_fraud = generate_bias(i, gender, wealth, health, gt_fraud, star_version = 'hist')[0]
+                fraud_train = generate_bias(i, gender, wealth, health, gt_fraud, star_version)[0]
+                star = rng.choice([fraud_train, 1- fraud_train], 1, p = [synth_data_acc, 1- synth_data_acc])[0]
+
             
             else:
                 fraud_train = abm_eval_fraud = generate_bias(i, gender, wealth, health, gt_fraud, star_version)[0] 
@@ -147,11 +153,9 @@ def generate_bias(race, gender, wealth, health, fraud, star_version, star_acc = 
     if star_version == 'uniform':
         star = rng.choice([fraud, 1- fraud], 1, p = [star_acc, 1- star_acc])
 
-    elif star_version == 'qualitative':
-        star_prob = rng.binomial(1,((wealth-0.2)**3+0.6)*(((-x+0.6)*1.6)**3+0.4))
-        star =  np.random.choice([fraud, 1 - fraud], 1, p =[fraud_det, 1- fraud_det])
-
-
+    # elif star_version == 'qualitative':
+    #     star_prob = rng.binomial(1,((wealth-0.2)**3+0.6)*(((-x+0.6)*1.6)**3+0.4))
+    #     star =  np.random.choice([fraud, 1 - fraud], 1, p =[fraud_det, 1- fraud_det])
 
     elif star_version == 'is1':
         if gender == 0: #women
@@ -180,9 +184,10 @@ def generate_bias(race, gender, wealth, health, fraud, star_version, star_acc = 
 
     elif star_version == 'hist':
         
-        raise NotImplementedError
+         star = rng.binomial(1, ((wealth-0.2)**3+0.3)*((wealth+0.3)**(-1)+(-0.7)),1)
+
     else:
-        raise ValueError('generate_star did not get the correct variable, check the paramters of the ABM')
+        raise ValueError('generate_star did not get the correct variable, check the admissible paramters of the ABM')
 
     
     return star

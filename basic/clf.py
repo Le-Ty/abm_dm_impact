@@ -64,7 +64,7 @@ def classifier_train_star(X, y, mitigate = 'None', viz = False):
     X = df_up_down_sampled.drop('y', axis = 1)
     X = X.rename(columns = {0: 'race', 1:'gender', 2:'wealth', 3:'health', 4:'star'})
 
-    if False: #mitigate == 'decorrelate':
+    if True: #mitigate == 'decorrelate':
         cr = CorrelationRemover(sensitive_feature_ids=['race'])
         # cr.fit(X)
         X_t = cr.fit_transform(X)
@@ -145,7 +145,7 @@ def classifier_train_star(X, y, mitigate = 'None', viz = False):
 
 
 
-    with open("s_is2.pkl", "wb") as f:
+    with open("s_hist_dec.pkl", "wb") as f:
         pickle.dump(pipe, f)
 
 def classifier_train(X, y, mitigate = 'None', viz = False):
