@@ -14,7 +14,8 @@ import IPython
 
 from agent import Person
 from clf import classifier_train
-from generate_data import generate_init
+from generate_data import generate_init, update_star
+from utils import fairness_metrics
 
 
 
@@ -50,15 +51,21 @@ class TaxFraudModel(ap.Model):
         """ Define the models' events per simulation step. """
 
         #EXECUTING FUNCTIONS
+        self.agents.update_star()
 
 
         #ACCESS & TREATMENT
         self.agents.fraud_algo(self.p.clf)
-        
-        self.agents.fairness_metrics(self.agents)
 
+        
+        # self.agents.fairness_metrics(self.agents)
         if self.p.expi == 'appeal':
+            print('appeal')
             self.agents.appeal()
+
+
+        self.agents.eod_gender, self.agents.eod_race, self.agents.dpd_gender, self.agents.dpd_race, self.agents.eval_acc = fairness_metrics(self.agents, pr = False)
+
 
 
         #BUREAUCRATICS
@@ -108,6 +115,7 @@ class TaxFraudModel(ap.Model):
         self.agents.record('eod_race')
         self.agents.record('dpd_gender')
         self.agents.record('dpd_race')
+        self.agents.record('eval_acc')
         
         
     

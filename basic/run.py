@@ -23,11 +23,11 @@ def run_model(clf,expi, star_version, synth_data_acc, abm_eval):
 
     parameters = {
         'my_parameter':42,
-        'agents':500,
+        'agents':150,
         'steps':100,
         'acc': 0.8, # accuracy of fraud prdediction
         'conviction_rate': 1,
-        'appeal_wealth': 0.3, # minimal wealth needed for appeal (could also become a param for distr. eventually)
+        'appeal_wealth': 0.25, # minimal wealth needed for appeal (could also become a param for distr. eventually)
         #'wealth_impact',
         'clf' : clf,
         'expi' : expi,
@@ -39,7 +39,7 @@ def run_model(clf,expi, star_version, synth_data_acc, abm_eval):
         
     }
     
-    exp1 = ap.Experiment(TaxFraudModel, parameters, iterations =10, record=True)
+    exp1 = ap.Experiment(TaxFraudModel, parameters, iterations =5, record=True)
     results_baseline = exp1.run() 
     df_baseline = results_baseline['variables']['Person']
     df_baseline_mlp = transform_pd(df_baseline)

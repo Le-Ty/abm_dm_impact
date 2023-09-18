@@ -93,9 +93,6 @@ def delta_function(disc_axis, y_axis, df, df_baseline):
 
 
 
-def non_compliance(tolerance =0.3):
-    #weight requirements 
-    non_compliance = weighted_resources + tolerance
 
 
 
@@ -133,22 +130,52 @@ def plot_heatmap(df,y, target, title = 'correlation matrix'):
 
 
 
-def fairness_metrics(data):
+def fairness_metrics(data, pr = False):
+        y_true = list(data.fraud)
+        y_pred = list(data.fraud_pred)
+        gender = data.gender
+        race = data.race
+        # print((y_pred), y_true)
 
-    y_true = list(data.fraud)
-    y_pred = list(data.fraud_pred)
-    gender = data.gender
-    race = data.race
+        dpd = []
+        eod = []
 
-    
-    for i in [gender,race]:
+        for i in [gender,race]:
+            if (sum(y_true) != 0 and sum(y_pred) != 0):
+               
 
-        temp_dpd = demographic_parity_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
-        temp_eod = equalized_odds_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
+                try:
+                    temp_dpd = demographic_parity_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
 
-        print('dpd',temp_dpd)
-        print('eod',temp_eod)
-    # dpd = demographic_parity_difference( y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
+                except ZeroDivisionError:
+                    temp_dpd = 0
+                dpd.append(temp_dpd)
+                try:
+                    temp_eod = equalized_odds_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
+                except ZeroDivisionError:
+                    temp_eod = 0
+                if pr:
+                    print('dpd',temp_dpd)
+                    print('eod',temp_eod)
+                eod.append(temp_eod)
+
+
+        # dpd = demographic_parity_difference( y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
+        if (sum(y_true) != 0 and sum(y_pred) != 0):
+            if not pr:
+                eod_gender = eod[0]
+                eod_race = eod[1]
+                dpd_gender = dpd[0]
+                dpd_race = dpd[1]   
+                eval_acc = 1 - sum(abs(np.array(y_true)-np.array(y_pred)))/len(y_true)
+                # x = 1 - sum(abs(np.array(y_pred)-np.array(data.star)))/len(y_true)
+                # print(self.eval_acc, x
+                # )
+
+                # print(eod_gender, eod_race, dpd_gender, dpd_race, eval_acc)
+
+                return eod_gender, eod_race, dpd_gender, dpd_race, eval_acc
+
 
 
 

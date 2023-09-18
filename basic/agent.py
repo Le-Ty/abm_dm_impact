@@ -15,8 +15,10 @@ import IPython
 
 #import other functions
 from generate_data import generate_init
+from generate_data import fraud_val, generate_bias
 
 from fairlearn.metrics import equalized_odds_ratio, demographic_parity_ratio
+from fairlearn.reductions import DemographicParity
 
 
 class Person(ap.Agent):
@@ -45,22 +47,22 @@ class Person(ap.Agent):
         self.dpd_gender = 0
         self.eod_race = 0
         self.eod_gender = 0
+        self.eval_acc  =0
         
         
-    def fraud_algo(self, classifier = True):
+    def fraud_algo(self, classifier):
         """ DM mechanism can also be ML"""
 
         path = os.path.abspath(os.getcwd())
-        self.resources = self.wealth
-        self.fraud_pred =0
+
 
         # decide how much influence the resources have 
         res_weight = 0.3
 
         if classifier != 'None':
            
-            filename = ("/gpfs/home4/ltiyavorabu/abm/basic/"+classifier)
-            # filename = ("clfs/" + classifier)
+            # filename = ("/gpfs/home4/ltiyavorabu/abm/basic/"+classifier)
+            filename = ("clfs/" + classifier)
             if self.p.star_version != None:
                 agent = [[self.race, self.gender, self.wealth, self.health, self.star]]
                 agent = pd.DataFrame(agent, columns = ['race', 'gender', 'wealth', 'health', 'star'])
@@ -70,8 +72,11 @@ class Person(ap.Agent):
             
             with open(filename, "rb") as f:
                 clf = pickle.load(f)    
+
+            temp = self.fraud_pred
             self.fraud_pred = clf.predict(agent)[0]
-            # self.fraud_pred = np.rint(self.fraud_pred[0]) 
+            # print(temp -self.fraud_pred)
+
 
         else:
             rng = np.random.default_rng()
@@ -80,31 +85,11 @@ class Person(ap.Agent):
             else:
                 self.fraud_pred = rng.binomial(1, (1-self.p.acc))
 
-        return self.fraud_pred
-        
 
-#  if classifier != None:
+    def update_star(self):
+        temp = self.star
+        self.star = generate_bias(self.race, self.gender, self.wealth, self.health, self.fraud, self.p.star_version, self.p.synth_data_acc)[0]
 
-#             agent = [[self.race, self.gender, self.wealth, self.health]]
-#             with open("clf.pkl", "rb") as f:
-#                 clf = pickle.load(f)    
-#             self.fraud_pred = ((1- res_weight)*clf.predict_proba(agent) + res_weight* self.resources)[0]
-#             self.fraud_pred = np.rint(self.fraud_pred[0])
-
-#         else:
-#             rng = np.random.default_rng()
-#             if self.fraud == 1:
-#                 self.fraud_pred = rng.binomial(1, ((1- res_weight)*self.p.acc + res_weight* self.resources))
-#             else:
-#                 self.fraud_pred = rng.binomial(1, (1- res_weight)*(1-self.p.acc) + res_weight* self.resources)
-        
-
-
-
-        # print(self.fraud_pred)
-
-        ### for more elaborate modelling ###
-        # self.fraud_pred = rng.binomial(1, fraud_cor) #*(0.8-self.p.wealth_appeal_corr))
         
 
     def appeal(self):
@@ -119,8 +104,8 @@ class Person(ap.Agent):
         if self.fraud_pred == 1:
             self.wealth = np.clip(self.wealth - np.max([0.05,(self.wealth*0.1)]),0,1)
             self.convicted =+ 1
-        self.fraud = rng.binomial(1,np.clip(((self.wealth-0.75)**4+0.3), 0,0.9))
-            # self.fraud_pred = 0
+        __, self.fraud, __ = fraud_val(self.wealth, self.race, self.gender, self.health,self.p.star_version,self.p.synth_data_acc, self.p.abm_eval, self.p.clf)
+            # self.fraud = 0
     
     def wealth_grow(self):
         self.wealth = min(1,self.wealth+pow(self.wealth,2)*0.1)
@@ -128,49 +113,7 @@ class Person(ap.Agent):
 
 
 
-    def fairness_metrics(self,data, pr = False):
 
-
-        y_true = list(data.fraud)
-        y_pred = list(data.fraud_pred)
-        gender = data.gender
-        race = data.race
-
-        # print(y_true)
-        # print(y_pred)
-        # print(gender,race)
-        # print(sum(y_pred))
-
-
-        dpd = []
-        eod = []
-
-        for i in [gender,race]:
-            if (sum(y_true) != 0 and sum(y_pred) != 0):
-                
-                try:
-                    temp_dpd = demographic_parity_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
-                except ZeroDivisionError:
-                    temp_dpd = 0
-                dpd.append(temp_dpd)
-                try:
-                    temp_eod = equalized_odds_ratio( y_true=y_true, y_pred=y_pred, sensitive_features=i)
-                except ZeroDivisionError:
-                    temp_eod = 0
-                if pr:
-                    print('dpd',temp_dpd)
-                    print('eod',temp_eod)
-                eod.append(temp_eod)
-
-
-        # dpd = demographic_parity_difference( y_true=y_true, y_pred=y_pred, sensitive_features=sensitive_features)
-        if (sum(y_true) != 0 and sum(y_pred) != 0):
-            if not pr:
-                self.eod_gender = eod[0]
-                self.eod_race = eod[1]
-                self.dpd_gender = dpd[0]
-                self.dpd_race = dpd[1]   
-                self.eval_acc = 1 - abs(sum(np.array(y_true)-np.array(y_pred)))/len(y_true)
 
             
      

@@ -27,23 +27,51 @@ import random
 import os
 
 
-def fraud_val(wealth, fraud_det = 0, star = False):
+def fraud_val(wealth, race = -1, gender = -1, health = -1,star_version = None,synth_data_acc = -1, abm_eval = -1, fraud_det = 0):
     # make fraud dependent on wealth 
     rng = np.random.default_rng() 
-
- 
-    if wealth > 0.40823212:
-        p_det = 1
-    else: 
-        p_det = 0
     
-    if not star:      
+    if star_version == None:
+        if wealth > 0.40823212:
+            p_det = 1
+        else: 
+            p_det = 0      
         p_prob = rng.binomial(1,np.clip(((wealth-0.75)**4+0.3), 0,0.9))
-        return np.random.choice([p_det,p_prob], 1, p =[fraud_det, 1- fraud_det])[0]  
+        fraud_train =abm_eval_fraud =star = np.random.choice([p_det,p_prob], 1, p =[fraud_det, 1- fraud_det])[0]  
 
     else:
-        p_prob = rng.binomial(1,np.clip(((wealth-0.2)**3+0.3), 0,0.9))
-        return np.random.choice([p_det,p_prob], 1, p =[fraud_det, 1- fraud_det])[0]  
+        p_prob = rng.binomial(1,(((wealth-0.2)**3+0.3)))
+        gt_fraud = np.rint(p_prob)
+
+        
+        if abm_eval == 'GT':
+            abm_eval_fraud = gt_fraud
+            fraud_train = generate_bias(race, gender, wealth, health, gt_fraud, star_version, synth_data_acc)[0]
+
+            if star_version == None:
+                star = fraud_train
+            else:
+                star = rng.choice([fraud_train, 1- fraud_train], 1, p = [synth_data_acc, 1- synth_data_acc])[0]
+
+        elif abm_eval == "HIST":
+            abm_eval_fraud = generate_bias(race, gender, wealth, health, gt_fraud, synth_data_acc, star_version = 'hist')[0]
+            fraud_train = generate_bias(race, gender, wealth, health, gt_fraud, star_version, synth_data_acc)[0]
+
+
+            if star_version == None:
+                star = fraud_train
+            else:
+                star = rng.choice([fraud_train, 1- fraud_train], 1, p = [synth_data_acc, 1- synth_data_acc])[0]
+
+        
+        else:
+            fraud_train = abm_eval_fraud = generate_bias(race, gender, wealth, health, gt_fraud, star_version, synth_data_acc)[0] 
+            if star_version == None:
+                star = fraud_train
+            else:    
+                star =  rng.choice([fraud_train, 1- fraud_train], 1, p = [synth_data_acc, 1- synth_data_acc])[0]
+        
+    return fraud_train, abm_eval_fraud, star
 
 
         
@@ -61,12 +89,12 @@ def generate_init(star_version, synth_data_acc, abm_eval, train_clf = True, n = 
     local1 = ("data/distributions_init.pickle")
     local2 = ("data/values_init.pickle")
 
-    with open(dir1, "rb") as f:
+    with open(local1, "rb") as f:
         d_fnw = pickle.load(f)
         d_mw = pickle.load(f)
         d_mnw = pickle.load(f)
         d_fw = pickle.load(f)
-    with open(dir2, "rb") as f:
+    with open(local2, "rb") as f:
         v_fnw = pickle.load(f)
         v_mw = pickle.load(f)
         v_mnw = pickle.load(f)
@@ -102,22 +130,8 @@ def generate_init(star_version, synth_data_acc, abm_eval, train_clf = True, n = 
             fraud_train = fraud_val(wealth, fraud_det, False)
         
         else:
-            gt_fraud = fraud_val(wealth, fraud_det, True)
-            
-            if abm_eval == 'GT':
-                abm_eval_fraud = gt_fraud
-                fraud_train = generate_bias(i, gender, wealth, health, gt_fraud, star_version)[0]
-                star = rng.choice([fraud_train, 1- fraud_train], 1, p = [synth_data_acc, 1- synth_data_acc])[0]
-
-            elif abm_eval == "HIST":
-                abm_eval_fraud = generate_bias(i, gender, wealth, health, gt_fraud, star_version = 'hist')[0]
-                fraud_train = generate_bias(i, gender, wealth, health, gt_fraud, star_version)[0]
-                star = rng.choice([fraud_train, 1- fraud_train], 1, p = [synth_data_acc, 1- synth_data_acc])[0]
-
-            
-            else:
-                fraud_train = abm_eval_fraud = generate_bias(i, gender, wealth, health, gt_fraud, star_version)[0] 
-                star =  rng.choice([fraud_train, 1- fraud_train], 1, p = [synth_data_acc, 1- synth_data_acc])[0]
+            fraud_train, abm_eval_fraud, star = fraud_val(wealth, i, gender, health,star_version,synth_data_acc, abm_eval) 
+                 
         
 
             
@@ -143,6 +157,17 @@ def generate_init(star_version, synth_data_acc, abm_eval, train_clf = True, n = 
     else:
         return race[0],g[0],w[0],h[0],s[0], f[0],fraud_pred,convicted[0]
 
+
+
+def update_star(race, gender, wealth, health, fraud, star_version, star_acc = 0.8):
+    stars = []
+    print(type(race))
+    for i in range(len(race)): 
+        temp = generate_bias(race[i], gender[i], wealth[i], health[i], fraud[i], star_version, star_acc)[0] 
+        stars.append(temp)
+    print(stars)
+    
+    return np.asarray(stars)
 
 
 
@@ -185,6 +210,8 @@ def generate_bias(race, gender, wealth, health, fraud, star_version, star_acc = 
     elif star_version == 'hist':
         
          star = rng.binomial(1, ((wealth-0.2)**3+0.3)*((wealth+0.3)**(-1)+(-0.7)),1)
+        #  star = rng.binomial(1,((wealth-0.75)**4+0.3),1)
+        #  star = [0]
 
     else:
         raise ValueError('generate_star did not get the correct variable, check the admissible paramters of the ABM')

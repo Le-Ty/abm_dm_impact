@@ -64,7 +64,7 @@ def classifier_train_star(X, y, mitigate = 'None', viz = False):
     X = df_up_down_sampled.drop('y', axis = 1)
     X = X.rename(columns = {0: 'race', 1:'gender', 2:'wealth', 3:'health', 4:'star'})
 
-    if True: #mitigate == 'decorrelate':
+    if False: #mitigate == 'decorrelate':
         cr = CorrelationRemover(sensitive_feature_ids=['race'])
         # cr.fit(X)
         X_t = cr.fit_transform(X)
@@ -133,19 +133,19 @@ def classifier_train_star(X, y, mitigate = 'None', viz = False):
         y_pred = pipe.predict(X_test)
         print(pipe.score(X_test,y_test))
     # clf = RandomForestClassifier(n_estimators=500)
-    # clf.fit(X_train, y_train)
+    # clf.fit(X_train, y_train) 
     # score = cross_val_score(pipe, X_train, y_train, cv=cv)
 
     X_test['fraud_pred'] = y_pred
     # print(X_test)
     X_test['fraud'] = list(y_test)
     # print(X_test)
-    fairness_metrics(X_test)
+    fairness_metrics(X_test, True)
 
 
 
 
-    with open("s_hist_dec.pkl", "wb") as f:
+    with open("s_uni.pkl", "wb") as f:
         pickle.dump(pipe, f)
 
 def classifier_train(X, y, mitigate = 'None', viz = False):
