@@ -56,13 +56,10 @@ class Person(ap.Agent):
         path = os.path.abspath(os.getcwd())
 
 
-        # decide how much influence the resources have 
-        res_weight = 0.3
-
-        if classifier != 'None':
+        if classifier != None:
            
-            # filename = ("/gpfs/home4/ltiyavorabu/abm/basic/"+classifier)
-            filename = ("clfs/" + classifier)
+            filename = ("/gpfs/home4/ltiyavorabu/abm/basic/"+classifier)
+            # filename = ("clfs/" + classifier)
             if self.p.star_version != None:
                 agent = [[self.race, self.gender, self.wealth, self.health, self.star]]
                 agent = pd.DataFrame(agent, columns = ['race', 'gender', 'wealth', 'health', 'star'])
@@ -73,7 +70,7 @@ class Person(ap.Agent):
             with open(filename, "rb") as f:
                 clf = pickle.load(f)    
 
-            temp = self.fraud_pred
+            # temp = self.fraud_pred
             self.fraud_pred = clf.predict(agent)[0]
             # print(temp -self.fraud_pred)
 
@@ -96,13 +93,14 @@ class Person(ap.Agent):
         """Possibility to Appeal to Fraud Algo Decision"""
         rng = np.random.default_rng()
         if self.fraud_pred == 1 and self.wealth > self.p.appeal_wealth:
-            self.fraud_algo(self.p.clf)
+            # self.update_star()
+            self.fraud_algo(None)
             
     def convict(self):
         """ Conviction and Consequences"""
         rng = np.random.default_rng()
         if self.fraud_pred == 1:
-            self.wealth = np.clip(self.wealth - np.max([0.05,(self.wealth*0.1)]),0,1)
+            self.wealth = np.clip(self.wealth - np.max([0.05,(self.wealth *0.1)]),0,1)
             self.convicted =+ 1
         __, self.fraud, __ = fraud_val(self.wealth, self.race, self.gender, self.health,self.p.star_version,self.p.synth_data_acc, self.p.abm_eval, self.p.clf)
             # self.fraud = 0

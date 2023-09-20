@@ -14,7 +14,7 @@ import IPython
 
 from agent import Person
 from clf import classifier_train
-from generate_data import generate_init, update_star
+from generate_data import generate_init
 from utils import fairness_metrics
 
 

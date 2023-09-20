@@ -89,12 +89,12 @@ def generate_init(star_version, synth_data_acc, abm_eval, train_clf = True, n = 
     local1 = ("data/distributions_init.pickle")
     local2 = ("data/values_init.pickle")
 
-    with open(local1, "rb") as f:
+    with open(dir1, "rb") as f:
         d_fnw = pickle.load(f)
         d_mw = pickle.load(f)
         d_mnw = pickle.load(f)
         d_fw = pickle.load(f)
-    with open(local2, "rb") as f:
+    with open(dir2, "rb") as f:
         v_fnw = pickle.load(f)
         v_mw = pickle.load(f)
         v_mnw = pickle.load(f)
@@ -159,15 +159,7 @@ def generate_init(star_version, synth_data_acc, abm_eval, train_clf = True, n = 
 
 
 
-def update_star(race, gender, wealth, health, fraud, star_version, star_acc = 0.8):
-    stars = []
-    print(type(race))
-    for i in range(len(race)): 
-        temp = generate_bias(race[i], gender[i], wealth[i], health[i], fraud[i], star_version, star_acc)[0] 
-        stars.append(temp)
-    print(stars)
-    
-    return np.asarray(stars)
+
 
 
 
@@ -196,13 +188,13 @@ def generate_bias(race, gender, wealth, health, fraud, star_version, star_acc = 
             star = rng.choice([fraud, 1- fraud], 1, p = [star_acc - 0.025, 1- star_acc + 0.025])
 
     elif star_version == 'is3':
-        if (gender == 0 and race == 1 and wealth < 0.2).all():
+        if (gender == 0 and race == 1 and np.array(wealth) < 0.2).all():
             star = rng.choice([fraud, 1- fraud], 1, p = [star_acc + 0.15, 1- star_acc - 0.15])
         else:
             star = rng.choice([fraud, 1- fraud], 1, p = [star_acc - 0.025, 1- star_acc + 0.025])
 
     elif star_version == 'is4':
-        if (gender == 0 and race == 1 and wealth < 0.2 and health < 0.4).all():
+        if (gender == 0 and race == 1 and np.array(wealth) < 0.2 and np.array(health) < 0.4).all():
             star = rng.choice([fraud, 1- fraud], 1, p = [star_acc + 0.15, 1- star_acc - 0.15])
         else:
             star = rng.choice([fraud, 1- fraud], 1, p = [star_acc - 0.0125, 1- star_acc + 0.0125])
