@@ -145,7 +145,7 @@ def classifier_train_star(X, y, mitigate = 'None', viz = False):
 
 
 
-    with open("s_is2_dec.pkl", "wb") as f:
+    with open("s_is4_dec.pkl", "wb") as f:
         pickle.dump(pipe, f)
 
 def classifier_train(X, y, mitigate = 'None', viz = False):

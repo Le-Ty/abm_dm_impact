@@ -48,28 +48,21 @@ def fraud_val(wealth, race = -1, gender = -1, health = -1,star_version = None,sy
             abm_eval_fraud = gt_fraud
             fraud_train = generate_bias(race, gender, wealth, health, gt_fraud, star_version, synth_data_acc)[0]
 
-            if star_version == None:
-                star = fraud_train
-            else:
-                star = rng.choice([fraud_train, 1- fraud_train], 1, p = [synth_data_acc, 1- synth_data_acc])[0]
 
         elif abm_eval == "HIST":
             abm_eval_fraud = generate_bias(race, gender, wealth, health, gt_fraud, synth_data_acc, star_version = 'hist')[0]
             fraud_train = generate_bias(race, gender, wealth, health, gt_fraud, star_version, synth_data_acc)[0]
 
-
-            if star_version == None:
-                star = fraud_train
-            else:
-                star = rng.choice([fraud_train, 1- fraud_train], 1, p = [synth_data_acc, 1- synth_data_acc])[0]
-
         
         else:
             fraud_train = abm_eval_fraud = generate_bias(race, gender, wealth, health, gt_fraud, star_version, synth_data_acc)[0] 
-            if star_version == None:
-                star = fraud_train
-            else:    
-                star =  rng.choice([fraud_train, 1- fraud_train], 1, p = [synth_data_acc, 1- synth_data_acc])[0]
+        
+        
+        if star_version == None:
+            star = fraud_train
+
+        else:    
+            star =  rng.choice([fraud_train, 1- fraud_train], 1, p = [synth_data_acc, 1- synth_data_acc])[0]
         
     return fraud_train, abm_eval_fraud, star
 
@@ -89,12 +82,12 @@ def generate_init(star_version, synth_data_acc, abm_eval, train_clf = True, n = 
     local1 = ("data/distributions_init.pickle")
     local2 = ("data/values_init.pickle")
 
-    with open(dir1, "rb") as f:
+    with open(local1, "rb") as f:
         d_fnw = pickle.load(f)
         d_mw = pickle.load(f)
         d_mnw = pickle.load(f)
         d_fw = pickle.load(f)
-    with open(dir2, "rb") as f:
+    with open(local2, "rb") as f:
         v_fnw = pickle.load(f)
         v_mw = pickle.load(f)
         v_mnw = pickle.load(f)

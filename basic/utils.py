@@ -26,7 +26,7 @@ import random
 import os
 
 
-def viz(data, x, y, hue):
+def viz(data, x, y, hue, plot_title = ""):
     fig, ax = plt.subplots()
 
     sns.lineplot(ax = ax,
@@ -34,7 +34,7 @@ def viz(data, x, y, hue):
                  x = x,
                  y = y,
                  hue = hue,
-                 marker = 'o')
+                 marker = 'o').set(title=plot_title)
 
     plt.show()
 
@@ -76,6 +76,17 @@ def delta_function(disc_axis, y_axis, df, df_baseline):
             df_x1[y_axis] = df_wb1
             data.append(df_x1)
         data = pd.concat(data)
+
+    elif disc_axis == 'misclassifications':
+        data = []
+        for i in [-1,0,1]:
+            df_b1 = df_baseline.iloc[(df_baseline[disc_axis] == i).values] 
+            df_wb1 = df.iloc[(df[disc_axis] == i).values][y_axis] - df_b1.groupby(level='t').mean()[y_axis]
+            df_x1 = df.iloc[(df[disc_axis] == i).values]
+            df_x1[y_axis] = df_wb1
+            data.append(df_x1)
+        data = pd.concat(data)
+
 
     else:
         df_b1 = df_baseline.iloc[(df_baseline[disc_axis] == 1).values] 

@@ -52,7 +52,7 @@ def run_model(clf,expi, star_version, synth_data_acc, abm_eval):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--clf", default="None", help = "classifier")
+    parser.add_argument("-c", "--clf", default= None, help = "classifier")
     parser.add_argument("-e", "--expi", metavar="IMAGE_FLIP", help = "experiment")
     parser.add_argument("-o", "--out", metavar="IMAGE_FLIP", help = "outputdir", default = '')
     parser.add_argument("-s", "--star", metavar="star version", help = "starversion", default = None)
