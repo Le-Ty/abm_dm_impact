@@ -32,7 +32,7 @@ from utils import fairness_metrics
 
 
 
-def classifier_train_star(X, y, mitigate = 'None', viz = True):
+def classifier_train_star(X, y, mitigate = 'None', viz = False):
 
     # X = (pickle.load(open(X_name, 'rb')))
     # y = (pickle.load(open(y_name, 'rb')))
@@ -72,13 +72,6 @@ def classifier_train_star(X, y, mitigate = 'None', viz = True):
         X_t = X_t.rename(columns = {0:'gender', 1:'wealth', 2:'health', 3:'star'})
         X_t.insert(0,'race',list(X['race']))
         # X_t.insert(0,'gender',list(X['gender']))
-        
-        with open("X_5.pkl", "wb") as f:
-            pickle.dump(X, f)
-
-        with open("X1_5.pkl", "wb") as f:
-            pickle.dump(X_t, f)
-
         if viz:
             plot_heatmap(pd.DataFrame(X),X['race'],target = 'race', title= "Correlation values in the original dataset")
 
@@ -90,9 +83,6 @@ def classifier_train_star(X, y, mitigate = 'None', viz = True):
         X_t2 = X_t2.rename(columns = {0:'race', 1:'wealth', 2:'health', 3: 'star'})
         X_t2.insert(1,'gender',list(X['gender']))
         # X_t.insert(0,'gender',list(X['gender']))
-        
-        with open("X2_5.pkl", "wb") as f:
-            pickle.dump(X_t2, f)
 
         if viz:
             plot_heatmap(pd.DataFrame(X),X['gender'], target = 'gender', title="Correlation values in the original dataset")
@@ -155,8 +145,8 @@ def classifier_train_star(X, y, mitigate = 'None', viz = True):
 
 
 
-    # with open("s_is4_dec.pkl", "wb") as f:
-    #     pickle.dump(pipe, f)
+    with open("s_is2_dec.pkl", "wb") as f:
+        pickle.dump(pipe, f)
 
 def classifier_train(X, y, mitigate = 'None', viz = False):
 

@@ -8,3 +8,5 @@ clfs/
 .ipynb_checkpoints/
 basic/__pycache__/
 *.pkl
+notebooks/
+evals/

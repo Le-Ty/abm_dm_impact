@@ -19,7 +19,7 @@ import IPython
 import pickle
 import argparse
 
-def run_model(clf,expi, star_version, synth_data_acc, abm_eval):
+def run_model(clf,expi, star_version, synth_data_acc, abm_eval, ci, ai):
 
     parameters = {
         'my_parameter':42,
@@ -27,7 +27,7 @@ def run_model(clf,expi, star_version, synth_data_acc, abm_eval):
         'steps':150,
         'acc': 0.9, # accuracy of fraud prdediction
         'conviction_rate': 1,
-        'appeal_wealth': 0.28, # minimal wealth needed for appeal (could also become a param for distr. eventually)
+        'appeal_wealth': 0.3, # minimal wealth needed for appeal (could also become a param for distr. eventually)
         #'wealth_impact',
         'clf' : clf,
         'expi' : expi,
@@ -35,11 +35,12 @@ def run_model(clf,expi, star_version, synth_data_acc, abm_eval):
         'fairness_metrics' : True,
         'star_version': star_version,
         'synth_data_acc' : synth_data_acc, 
-        'abm_eval' : abm_eval
-        
+        'abm_eval' : abm_eval,
+        'convict_inter' : ci,
+        'appeal_inter' : ai
     }
     
-    exp1 = ap.Experiment(TaxFraudModel, parameters, iterations =50, record=True)
+    exp1 = ap.Experiment(TaxFraudModel, parameters, iterations =20, record=True)
     results_baseline = exp1.run() 
     df_baseline = results_baseline['variables']['Person']
     df_baseline_mlp = transform_pd(df_baseline)
@@ -52,12 +53,14 @@ def run_model(clf,expi, star_version, synth_data_acc, abm_eval):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--clf", default= None, help = "classifier")
+    parser.add_argument("-c", "--clf", default=None, help = "classifier")
     parser.add_argument("-e", "--expi", metavar="IMAGE_FLIP", help = "experiment")
     parser.add_argument("-o", "--out", metavar="IMAGE_FLIP", help = "outputdir", default = '')
     parser.add_argument("-s", "--star", metavar="star version", help = "starversion", default = None)
     parser.add_argument("-a", "--abm_eval", metavar="abm eval", help = "starversion", default = None)
     parser.add_argument("-sda", "--synth_data_acc", metavar="synthetic data cc", help = "starversion", default = None, type = float)
+    parser.add_argument("-ai", "--ai", metavar="abm eval", help = "starversion", default = None)
+    parser.add_argument("-ci", "--ci", metavar="abm eval", help = "starversion", default = None)
 
     args = parser.parse_args()
     kwargs = vars(args)
@@ -67,10 +70,12 @@ if __name__ == '__main__':
     star_version = kwargs.pop("star")
     abm_eval = kwargs.pop("abm_eval")
     synth_data_acc = kwargs.pop("synth_data_acc")
+    ai = kwargs.pop("ai")
+    ci = kwargs.pop("ci")
 
-    df = run_model(clf,expi, star_version, synth_data_acc, abm_eval)
+    df = run_model(clf,expi, star_version, synth_data_acc, abm_eval, ci, ai)
 
-    filename =  (outdir + '/df_{}_{}_{}_{}.pkl').format(clf,expi,star_version,abm_eval)
+    filename =  (outdir + '/df_{}_{}_{}_{}_{}_{}.pkl').format(clf,expi,star_version,abm_eval, ci, ai)
 
     with open(filename, "wb") as handle:
         pickle.dump(df, handle) 

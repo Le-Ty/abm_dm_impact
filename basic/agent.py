@@ -56,7 +56,10 @@ class Person(ap.Agent):
         path = os.path.abspath(os.getcwd())
 
 
-        if classifier != None:
+        # decide how much influence the resources have 
+        res_weight = 0.3
+
+        if classifier != None and classifier != 'None':
            
             filename = ("/gpfs/home4/ltiyavorabu/abm/basic/"+classifier)
             # filename = ("clfs/" + classifier)
@@ -92,15 +95,48 @@ class Person(ap.Agent):
     def appeal(self):
         """Possibility to Appeal to Fraud Algo Decision"""
         rng = np.random.default_rng()
-        if self.fraud_pred == 1 and self.wealth > self.p.appeal_wealth:
-            # self.update_star()
-            self.fraud_algo(None)
+        if self.fraud_pred == 1:
+            if self.p.appeal_inter:
+                if self.wealth > (self.p.appeal_wealth) and self.race == 0 and self.gender == 1: #wm
+                    self.fraud_algo(None)
+
+                elif self.wealth > (self.p.appeal_wealth + 0.02) and self.race == 0 and self.gender == 0: #ww
+                    # self.update_star()
+                    self.fraud_algo(None)
+                
+                elif self.wealth > (self.p.appeal_wealth + 0.04) and self.race == 1 and self.gender == 1: #nwm
+                    # self.update_star()
+                    self.fraud_algo(None)
+
+                elif self.wealth > (self.p.appeal_wealth +0.08) and self.race == 1 and self.gender == 0: #nww
+                    self.fraud_algo(None)
             
+            elif self.wealth > self.p.appeal_wealth:
+                self.fraud_algo(None)
+
+
+
+
     def convict(self):
         """ Conviction and Consequences"""
         rng = np.random.default_rng()
         if self.fraud_pred == 1:
-            self.wealth = np.clip(self.wealth - np.max([0.05,(self.wealth *0.1)]),0,1)
+            if self.p.convict_inter:
+                if self.race == 0 and self.gender == 1: #wm
+                    self.wealth = np.clip(self.wealth - np.max([0.05,(self.wealth *0.1)]),0,1)
+
+                elif self.race == 0 and self.gender == 0: #ww
+                    self.wealth = np.clip(self.wealth - np.max([0.05,(self.wealth *0.1)]) - 0.02,0,1)
+                
+                elif self.race == 1 and self.gender == 1: #nwm
+                    self.wealth = np.clip(self.wealth - np.max([0.05,(self.wealth *0.1)]) - 0.04,0,1)
+
+                elif self.race == 1 and self.gender == 0: #nww
+                    self.wealth = np.clip(self.wealth - np.max([0.05,(self.wealth *0.1)]) - 0.08,0,1)
+            
+            elif self.wealth > self.p.appeal_wealth:
+                self.wealth = np.clip(self.wealth - np.max([0.05,(self.wealth *0.1)]),0,1)
+            
             self.convicted =+ 1
         __, self.fraud, __ = fraud_val(self.wealth, self.race, self.gender, self.health,self.p.star_version,self.p.synth_data_acc, self.p.abm_eval, self.p.clf)
             # self.fraud = 0
