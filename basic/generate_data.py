@@ -170,6 +170,7 @@ def generate_bias(race, gender, wealth, health, fraud, star_version, star_acc = 
     elif star_version == 'is1':
         if gender == 0: #women
             star = rng.choice([fraud, 1- fraud], 1, p = [star_acc + 0.1, 1- star_acc - 0.1])
+            
         else: # men
             star = rng.choice([fraud, 1- fraud], 1, p = [star_acc - 0.1, 1- star_acc + 0.1])
 
