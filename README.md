@@ -30,6 +30,6 @@ pip install -r requirements.txt
 ├── abm #scripts
 │   └── data # data to init the ABM
 ├── README.md # you are here
-├── .gitignore # you are here
+├── .gitignore 
 └── requirements.txt # if you are using pip
 ```
