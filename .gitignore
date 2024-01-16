@@ -11,4 +11,4 @@ notebooks/
 evals/
 src/
 poetry.lock
-pyproject.toml
+pyproject.toml #deprecated
