@@ -10,3 +10,5 @@ basic/__pycache__/
 notebooks/
 evals/
 src/
+poetry.lock
+pyproject.toml
