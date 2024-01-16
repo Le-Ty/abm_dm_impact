@@ -22,3 +22,14 @@ Finally, if neither of the above options are desired, we also provide a
 ```terminal
 pip install -r requirements.txt
 ```
+
+### Repository Structure
+
+```bash
+.
+├── abm #scripts
+│   └── data # data to init the ABM
+├── README.md # you are here
+├── .gitignore # you are here
+└── requirements.txt # if you are using pip
+```
